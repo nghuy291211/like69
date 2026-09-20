@@ -3,94 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đặt đơn hàng SMM Panel</title>
+    <title>Hệ Thống Đặt Đơn TikTok Tự Động</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-        body { background-color: #121212; color: #ffffff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .card { background: #1e1e2f; padding: 25px; border-radius: 12px; max-width: 480px; width: 100%; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        h2 { text-align: center; margin-bottom: 20px; color: #4e54c8; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background: #0f172a; color: #f8fafc; padding: 20px; }
+        .container { max-width: 600px; margin: 20px auto; background: #1e293b; padding: 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        h2 { text-align: center; margin-bottom: 20px; color: #38bdf8; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
-        input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #2a2a3d; color: #fff; font-size: 14px; }
-        input:focus { outline: none; border-color: #4e54c8; }
-        button { width: 100%; padding: 12px; background: linear-gradient(to right, #4e54c8, #8f94fb); border: none; border-radius: 6px; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
-        button:hover { opacity: 0.9; }
-        #result { margin-top: 15px; padding: 10px; border-radius: 6px; display: none; word-wrap: break-word; font-size: 14px; }
-        .success { background-color: #1b4332; color: #75b798; border: 1px solid #2d6a4f; }
-        .error { background-color: #4c1d1d; color: #ea868f; border: 1px solid #842029; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #cbd5e1; }
+        select, input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 14px; }
+        select:focus, input:focus { outline: none; border-color: #38bdf8; }
+        .info-text { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+        .price-calculator { background: #0f172a; padding: 15px; border-radius: 6px; margin-top: 20px; margin-bottom: 20px; border: 1px dashed #38bdf8; font-weight: bold; color: #38bdf8; text-align: center; font-size: 16px; }
+        button { width: 100%; padding: 14px; background: #2563eb; border: none; border-radius: 6px; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #1d4ed8; }
+        button:disabled { background: #64748b; cursor: not-allowed; }
+        #alert { margin-top: 15px; padding: 12px; border-radius: 6px; display: none; font-size: 14px; line-height: 1.4; }
+        .success { background: #064e3b; color: #6ee7b7; border: 1px solid #047857; }
+        .error { background: #7f1d1d; color: #fca5a5; border: 1px solid #b91c1c; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>Tạo đơn hàng SMM</h2>
+<div class="container">
+    <h2>ĐẶT ĐƠN TIKTOK AUTO</h2>
+
     <form id="orderForm">
         <div class="form-group">
-            <label>API Key của bạn:</label>
-            <input type="text" id="apiKey" placeholder="Nhập c7f7b********" required>
+            <label>Dịch vụ TikTok (Trực tiếp từ API):</label>
+            <select id="serviceSelect" onchange="updateServiceInfo()"></select>
         </div>
+
         <div class="form-group">
-            <label>ID Dịch vụ (Service ID):</label>
-            <input type="number" id="service" placeholder="Ví dụ: 101" required>
+            <label>Link TikTok (Video hoặc Profile):</label>
+            <input type="url" id="link" placeholder="https://www.tiktok.com/@username/video/..." required>
         </div>
+
         <div class="form-group">
-            <label>Đường dẫn (Link bài viết / trang):</label>
-            <input type="url" id="link" placeholder="https://..." required>
+            <label>Số lượng:</label>
+            <input type="number" id="quantity" value="1000" oninput="calculatePrice()" required>
+            <div class="info-text" id="limitText">Tối thiểu: - | Tối đa: -</div>
         </div>
-        <div class="form-group">
-            <label>Số lượng (Quantity):</label>
-            <input type="number" id="quantity" placeholder="Ví dụ: 1000" required>
+
+        <div class="price-calculator">
+            Thành tiền: <span id="totalPrice">0 đ</span>
         </div>
-        <button type="submit" id="submitBtn">Gửi đơn hàng</button>
+
+        <button type="submit" id="btnSubmit">TẠO ĐƠN HÀNG NGAY</button>
     </form>
 
-    <div id="result"></div>
+    <div id="alert"></div>
 </div>
 
 <script>
-    document.getElementById('orderForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const btn = document.getElementById('submitBtn');
-        const resultDiv = document.getElementById('result');
-        
-        btn.innerText = 'Đang xử lý...';
-        btn.disabled = true;
-        resultDiv.style.display = 'none';
+    let servicesList = [];
 
-        const data = {
-            apiKey: document.getElementById('apiKey').value.trim(),
-            service: document.getElementById('service').value,
+    // Tự động load danh sách dịch vụ khi mở trang
+    async function fetchServices() {
+        const select = document.getElementById('serviceSelect');
+        select.innerHTML = '<option value="">Đang tải dịch vụ TikTok từ API...</option>';
+
+        try {
+            const res = await fetch('/api/services');
+            const data = await res.json();
+
+            if (data.status === 'success' && data.data.length > 0) {
+                servicesList = data.data;
+                select.innerHTML = '';
+                
+                servicesList.forEach(s => {
+                    select.innerHTML += `<option value="${s.service}">[ID: ${s.service}] ${s.name} - ${s.rate.toLocaleString('vi-VN')}đ / 1k</option>`;
+                });
+
+                updateServiceInfo();
+            } else {
+                select.innerHTML = '<option value="">Không tìm thấy dịch vụ TikTok nào!</option>';
+            }
+        } catch (e) {
+            select.innerHTML = '<option value="">Lỗi tải danh sách dịch vụ!</option>';
+        }
+    }
+
+    function updateServiceInfo() {
+        const serviceId = parseInt(document.getElementById('serviceSelect').value);
+        const service = servicesList.find(s => s.service == serviceId);
+
+        if (service) {
+            document.getElementById('limitText').innerText = `Tối thiểu: ${service.min.toLocaleString('vi-VN')} | Tối đa: ${service.max.toLocaleString('vi-VN')}`;
+            document.getElementById('quantity').min = service.min;
+            document.getElementById('quantity').max = service.max;
+            calculatePrice();
+        }
+    }
+
+    function calculatePrice() {
+        const serviceId = parseInt(document.getElementById('serviceSelect').value);
+        const quantity = parseInt(document.getElementById('quantity').value) || 0;
+        const service = servicesList.find(s => s.service == serviceId);
+
+        if (service) {
+            const total = (quantity / 1000) * service.rate;
+            document.getElementById('totalPrice').innerText = total.toLocaleString('vi-VN') + ' đ';
+        }
+    }
+
+    document.getElementById('orderForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnSubmit');
+        const alertBox = document.getElementById('alert');
+        
+        btn.innerText = "Đang kết nối API đặt đơn...";
+        btn.disabled = true;
+        alertBox.style.display = 'none';
+
+        const payload = {
+            service: document.getElementById('serviceSelect').value,
             link: document.getElementById('link').value.trim(),
             quantity: document.getElementById('quantity').value
         };
 
         try {
-            const res = await fetch('/api/create-order', {
+            const res = await fetch('/api/order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: JSON.stringify(payload)
             });
-            const responseData = await res.json();
+            const result = await res.json();
 
-            resultDiv.style.display = 'block';
-            if (res.ok && responseData.status === 'success') {
-                resultDiv.className = 'success';
-                resultDiv.innerHTML = '<strong>Thành công!</strong><br><pre>' + JSON.stringify(responseData.data, null, 2) + '</pre>';
+            alertBox.style.display = 'block';
+            if (res.ok && result.status === 'success') {
+                alertBox.className = 'success';
+                alertBox.innerHTML = `<strong>ĐẶT ĐƠN THÀNH CÔNG!</strong><br>Mã đơn hàng nhà cung cấp: <strong>${result.orderId}</strong>`;
             } else {
-                resultDiv.className = 'error';
-                resultDiv.innerHTML = '<strong>Lỗi:</strong> ' + JSON.stringify(responseData.message);
+                alertBox.className = 'error';
+                alertBox.innerHTML = `<strong>TẠO ĐƠN THẤT BẠI:</strong> ${result.message}`;
             }
         } catch (err) {
-            resultDiv.style.display = 'block';
-            resultDiv.className = 'error';
-            resultDiv.innerText = 'Lỗi kết nối tới server!';
+            alertBox.style.display = 'block';
+            alertBox.className = 'error';
+            alertBox.innerText = "Lỗi kết nối tới Server!";
         } finally {
-            btn.innerText = 'Gửi đơn hàng';
+            btn.innerText = "TẠO ĐƠN HÀNG NGAY";
             btn.disabled = false;
         }
     });
+
+    fetchServices();
 </script>
 
 </body>
 </html>
-
