@@ -11,14 +11,11 @@ app.use(express.static(path.join(__dirname, 'views')));
 
 // THÔNG TIN API TỪ DICHVU.C25TOOL.NET
 const PROVIDER_API_URL = process.env.PROVIDER_API_URL || 'https://dichvu.c25tool.net/api/v2';
-const PROVIDER_API_KEY = process.env.PROVIDER_API_KEY || 'c717b*********'; // Thay API Key thực tế của bạn tại đây
-
-// Tỉ giá USD -> VND để quy đổi số dư API nếu API trả về USD
-const USD_TO_VND_RATE = 25400; 
+const PROVIDER_API_KEY = process.env.PROVIDER_API_KEY || 'c717b*********'; // Điền API Key thực tế
 
 function roundMoney(value) {
     const num = Number(value) || 0;
-    return Math.round(num * 1000) / 1000;
+    return Math.round(num);
 }
 
 let users = [
@@ -29,7 +26,7 @@ let users = [
 let orders = [];
 let balanceChanges = [];
 
-// 1. API Lấy danh sách dịch vụ trực tiếp từ dichvu.c25tool.net
+// 1. API Lấy dịch vụ (ĐÃ LỌC CHỈ LẤY TIKTOK + SỬA GIÁ TỈ LỆ)
 app.get('/api/services', async (req, res) => {
     try {
         const response = await axios.post(PROVIDER_API_URL, new URLSearchParams({
@@ -43,36 +40,34 @@ app.get('/api/services', async (req, res) => {
         let rawData = response.data;
 
         if (Array.isArray(rawData)) {
-            // Chuẩn hóa dữ liệu trả về từ dichvu.c25tool.net
-            const formattedServices = rawData.map(s => {
-                let rateNumber = parseFloat(s.rate) || 0;
-                
-                // Nếu giá rate trong API gốc là USD (ví dụ 0.5/1k) thì đổi ra VND
-                if (rateNumber < 10) { 
-                    rateNumber = rateNumber * USD_TO_VND_RATE;
-                }
-
-                return {
+            // Lọc CHỈ LẤY dịch vụ thuộc nền tảng TikTok
+            const tiktokServices = rawData
+                .filter(s => {
+                    const platform = (s.platform || '').toLowerCase();
+                    const category = (s.category || '').toLowerCase();
+                    const name = (s.name || '').toLowerCase();
+                    return platform.includes('tiktok') || category.includes('tiktok') || name.includes('tiktok');
+                })
+                .map(s => ({
                     service: s.service,
-                    category: s.category || 'Dịch vụ Tổng Hợp',
-                    name: s.name || 'Dịch vụ',
-                    rate: rateNumber, // Ép về số nguyên/thực VND
+                    category: s.category || 'TikTok Services',
+                    name: s.name,
+                    rate: parseFloat(s.rate) || 0, // Giá tính trên 1.000 lượng
                     min: parseInt(s.min) || 100,
                     max: parseInt(s.max) || 100000
-                };
-            });
+                }));
 
-            return res.json({ status: 'success', data: formattedServices });
+            return res.json({ status: 'success', data: tiktokServices });
         } else {
-            return res.status(400).json({ status: 'error', message: 'API Key không chính xác hoặc lỗi từ c25tool' });
+            return res.status(400).json({ status: 'error', message: 'API Key không chính xác hoặc lỗi đối tác' });
         }
     } catch (error) {
-        console.error('Lỗi kết nối API dichvu.c25tool.net:', error.message);
-        return res.status(500).json({ status: 'error', message: 'Không thể kết nối API nhà cung cấp' });
+        console.error('Lỗi API services:', error.message);
+        return res.status(500).json({ status: 'error', message: 'Lỗi kết nối nhà cung cấp API' });
     }
 });
 
-// 2. API Lấy Số Dư thực tế
+// 2. API Lấy Số Dư
 app.get('/api/user/balance', async (req, res) => {
     const username = req.query.username;
     const user = users.find(u => u.username.toLowerCase() === (username || '').toLowerCase());
@@ -81,7 +76,7 @@ app.get('/api/user/balance', async (req, res) => {
         return res.status(404).json({ status: 'error', message: 'Không tìm thấy người dùng' });
     }
 
-    let realApiBalanceVND = 0;
+    let realApiBalance = 0;
 
     if (user.role === 'root_admin') {
         try {
@@ -93,18 +88,16 @@ app.get('/api/user/balance', async (req, res) => {
                 timeout: 5000
             });
 
-            if (apiRes.data && apiRes.data.balance) {
-                const balanceVal = parseFloat(apiRes.data.balance) || 0;
-                
-                // Nếu đơn vị là USD, quy đổi ra VND để hiển thị chuẩn trên web
+            if (apiRes.data && apiRes.data.balance !== undefined) {
+                let bal = parseFloat(apiRes.data.balance) || 0;
+                // Nếu c25tool trả về USD thì mới nhân 25.400, nếu đã là VNĐ giữ nguyên
                 if (apiRes.data.currency === 'USD') {
-                    realApiBalanceVND = balanceVal * USD_TO_VND_RATE;
-                } else {
-                    realApiBalanceVND = balanceVal;
+                    bal = bal * 25400;
                 }
+                realApiBalance = bal;
             }
         } catch (err) {
-            console.error('Lỗi lấy số dư c25tool:', err.message);
+            console.error('Lỗi lấy số dư API gốc:', err.message);
         }
     }
 
@@ -112,7 +105,7 @@ app.get('/api/user/balance', async (req, res) => {
         status: 'success',
         role: user.role,
         usableBalance: roundMoney(user.balance),
-        realApiBalance: roundMoney(realApiBalanceVND)
+        realApiBalance: roundMoney(realApiBalance)
     });
 });
 
@@ -129,7 +122,7 @@ app.post('/api/login', (req, res) => {
     });
 });
 
-// 4. API Tạo đơn hàng
+// 4. API Tạo Đơn
 app.post('/api/order', async (req, res) => {
     const { username, service, link, quantity, price } = req.body;
     const user = users.find(u => u.username.toLowerCase() === (username || '').toLowerCase());
@@ -138,7 +131,7 @@ app.post('/api/order', async (req, res) => {
 
     const totalCost = roundMoney(price);
     if (user.balance < totalCost) {
-        return res.status(400).json({ status: 'error', message: 'Số dư không đủ thanh toán' });
+        return res.status(400).json({ status: 'error', message: 'Số dư tài khoản không đủ thanh toán' });
     }
 
     try {
@@ -169,18 +162,18 @@ app.post('/api/order', async (req, res) => {
 
             balanceChanges.unshift({
                 username: user.username,
-                amount: roundMoney(-totalCost),
+                amount: -totalCost,
                 lastBalance: user.balance,
-                description: `Thanh toán đơn hàng API #${orderId}`,
+                description: `Tạo đơn TikTok API #${orderId}`,
                 time: new Date().toLocaleString('vi-VN')
             });
 
             return res.json({ status: 'success', orderId: orderId, remainingBalance: user.balance });
         } else {
-            return res.status(400).json({ status: 'error', message: apiOrder.data?.error || 'Lỗi từ nhà cung cấp API' });
+            return res.status(400).json({ status: 'error', message: apiOrder.data?.error || 'Lỗi từ hệ thống API gốc' });
         }
     } catch (err) {
-        return res.status(500).json({ status: 'error', message: 'Không thể gửi đơn sang API c25tool' });
+        return res.status(500).json({ status: 'error', message: 'Không thể kết nối máy chủ tạo đơn' });
     }
 });
 
