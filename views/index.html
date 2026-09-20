@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Dịch Vụ Auto API</title>
+    <title>Hệ Thống Dịch Vụ TikTok Auto API</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
@@ -35,6 +35,7 @@
         button.btn-submit { width: 100%; padding: 14px; background: #10b981; border: none; border-radius: 12px; color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(3, 7, 18, 0.85); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: #0f172a; padding: 24px; border-radius: 20px; width: 90%; max-width: 360px; border: 1px solid rgba(56, 189, 248, 0.2); }
+        .list-item { background: #070a12; padding: 12px; border-radius: 12px; border: 1px solid #1e293b; margin-bottom: 10px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -59,15 +60,15 @@
     <div class="card">
         <div class="main-tabs">
             <div class="tab-item active" onclick="switchTab('orderTab', this)"><i class="fa-solid fa-cart-shopping"></i> Đặt Đơn</div>
-            <div class="tab-item" onclick="switchTab('historyTab', this)"><i class="fa-solid fa-clock-rotate-left"></i> Đơn Hàng</div>
-            <div class="tab-item" onclick="switchTab('changesTab', this)"><i class="fa-solid fa-money-bill-transfer"></i> Biến Động</div>
-            <div class="tab-item" onclick="switchTab('profileTab', this)"><i class="fa-solid fa-user-gear"></i> Tài Khoản</div>
+            <div class="tab-item" onclick="switchTab('historyTab', this); loadOrders();"><i class="fa-solid fa-clock-rotate-left"></i> Đơn Hàng</div>
+            <div class="tab-item" onclick="switchTab('changesTab', this); loadChanges();"><i class="fa-solid fa-money-bill-transfer"></i> Biến Động</div>
+            <div class="tab-item" onclick="switchTab('profileTab', this); loadProfile();"><i class="fa-solid fa-user-gear"></i> Tài Khoản</div>
         </div>
 
         <div class="tab-content active" id="orderTab">
             <form id="orderForm">
                 <div class="form-group">
-                    <label>Phân loại dịch vụ:</label>
+                    <label>Phân loại dịch vụ TikTok:</label>
                     <select id="categorySelect" onchange="filterServices()"></select>
                 </div>
                 <div class="form-group">
@@ -91,8 +92,8 @@
             </form>
         </div>
 
-        <div class="tab-content" id="historyTab"><div id="historyList"></div></div>
-        <div class="tab-content" id="changesTab"><div id="changesList"></div></div>
+        <div class="tab-content" id="historyTab"><div id="historyList">Chưa có đơn hàng nào.</div></div>
+        <div class="tab-content" id="changesTab"><div id="changesList">Chưa có biến động số dư.</div></div>
         <div class="tab-content" id="profileTab"><div id="profileContent"></div></div>
     </div>
 </div>
@@ -121,7 +122,7 @@
 
     function formatMoney(amount) {
         let num = Number(amount) || 0;
-        return num.toLocaleString('vi-VN', { maximumFractionDigits: 3 }) + ' đ';
+        return num.toLocaleString('vi-VN') + ' đ';
     }
 
     function switchTab(tabId, element) {
@@ -156,35 +157,40 @@
 
     async function loadBalance() {
         if (!currentUser) return;
-        const res = await fetch(`/api/user/balance?username=${encodeURIComponent(currentUser.username)}`);
-        const data = await res.json();
-        if (data.status === 'success') {
-            document.getElementById('usableBalance').innerText = formatMoney(data.usableBalance);
-            if (data.role === 'root_admin') {
-                document.getElementById('apiBalanceCard').style.display = 'block';
-                document.getElementById('apiRealBalance').innerText = formatMoney(data.realApiBalance);
+        try {
+            const res = await fetch(`/api/user/balance?username=${encodeURIComponent(currentUser.username)}`);
+            const data = await res.json();
+            if (data.status === 'success') {
+                document.getElementById('usableBalance').innerText = formatMoney(data.usableBalance);
+                if (data.role === 'root_admin') {
+                    document.getElementById('apiBalanceCard').style.display = 'block';
+                    document.getElementById('apiRealBalance').innerText = formatMoney(data.realApiBalance);
+                }
             }
+        } catch (err) {
+            console.error("Lỗi lấy số dư:", err);
         }
     }
 
-    // Tải dịch vụ TRỰC TIẾP từ API
     async function fetchApiServices() {
         try {
             const res = await fetch('/api/services');
             const data = await res.json();
-            if (data.status === 'success' && Array.isArray(data.data)) {
+
+            if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
                 apiServices = data.data;
 
-                // Lấy danh sách danh mục (category) không trùng lặp từ API
                 const categories = [...new Set(apiServices.map(s => s.category))];
                 const catSelect = document.getElementById('categorySelect');
                 catSelect.innerHTML = '';
                 categories.forEach(c => catSelect.innerHTML += `<option value="${c}">${c}</option>`);
 
                 filterServices();
+            } else {
+                document.getElementById('categorySelect').innerHTML = '<option>Không có dịch vụ TikTok</option>';
             }
         } catch (e) {
-            console.error("Lỗi lấy dữ liệu API dịch vụ:", e);
+            console.error("Lỗi lấy dịch vụ:", e);
         }
     }
 
@@ -193,10 +199,11 @@
         const filtered = apiServices.filter(s => s.category === cat);
         const serviceSelect = document.getElementById('serviceSelect');
         serviceSelect.innerHTML = '';
+        
         filtered.forEach(s => {
-            const rateFormatted = formatMoney(s.rate);
-            serviceSelect.innerHTML += `<option value="${s.service}">[ID ${s.service}] ${s.name} - ${rateFormatted} / 1k</option>`;
+            serviceSelect.innerHTML += `<option value="${s.service}">[ID ${s.service}] ${s.name} - ${formatMoney(s.rate)}/1k</option>`;
         });
+        
         updateDetails();
     }
 
@@ -215,9 +222,67 @@
         const service = apiServices.find(s => s.service == serviceId);
 
         if (service) {
-            // Rate của API là giá trên 1,000 lượt
+            // Giá gốc rate tính theo 1.000 lượng
             currentCalculatedPrice = (qty / 1000) * Number(service.rate);
             document.getElementById('totalPrice').innerText = formatMoney(currentCalculatedPrice);
+        }
+    }
+
+    // Hiển thị Tab Thông tin tài khoản
+    function loadProfile() {
+        const profileBox = document.getElementById('profileContent');
+        if (!currentUser) {
+            profileBox.innerHTML = '<p style="color: #94a3b8; text-align: center;">Vui lòng đăng nhập để xem thông tin!</p>';
+            return;
+        }
+
+        profileBox.innerHTML = `
+            <div class="list-item">
+                <p style="margin-bottom: 6px;"><strong>Tên tài khoản:</strong> ${currentUser.username}</p>
+                <p style="margin-bottom: 6px;"><strong>Chức vụ:</strong> ${currentUser.role === 'root_admin' ? 'Root Admin (Quản trị viên)' : 'Thành viên'}</p>
+                <p><strong>Trạng thái:</strong> <span style="color: #34d399;">Hoạt động</span></p>
+            </div>
+        `;
+    }
+
+    async function loadOrders() {
+        if (!currentUser) return;
+        const res = await fetch(`/api/user/orders?username=${encodeURIComponent(currentUser.username)}`);
+        const data = await res.json();
+        const box = document.getElementById('historyList');
+
+        if (data.status === 'success' && data.data.length > 0) {
+            box.innerHTML = data.data.map(o => `
+                <div class="list-item">
+                    <p><strong>Mã đơn API:</strong> #${o.id}</p>
+                    <p><strong>Dịch vụ ID:</strong> ${o.service}</p>
+                    <p><strong>Số lượng:</strong> ${o.quantity}</p>
+                    <p><strong>Tổng tiền:</strong> ${formatMoney(o.price)}</p>
+                    <p style="color:#64748b; font-size: 10px; margin-top:4px;">${o.createdAt}</p>
+                </div>
+            `).join('');
+        } else {
+            box.innerHTML = '<p style="color: #94a3b8; text-align: center;">Chưa có đơn hàng nào.</p>';
+        }
+    }
+
+    async function loadChanges() {
+        if (!currentUser) return;
+        const res = await fetch(`/api/user/balance-changes?username=${encodeURIComponent(currentUser.username)}`);
+        const data = await res.json();
+        const box = document.getElementById('changesList');
+
+        if (data.status === 'success' && data.data.length > 0) {
+            box.innerHTML = data.data.map(c => `
+                <div class="list-item">
+                    <p><strong>Nội dung:</strong> ${c.description}</p>
+                    <p><strong>Số tiền:</strong> <span style="color: ${c.amount < 0 ? '#f87171' : '#34d399'};">${formatMoney(c.amount)}</span></p>
+                    <p><strong>Số dư sau GD:</strong> ${formatMoney(c.lastBalance)}</p>
+                    <p style="color:#64748b; font-size: 10px; margin-top:4px;">${c.time}</p>
+                </div>
+            `).join('');
+        } else {
+            box.innerHTML = '<p style="color: #94a3b8; text-align: center;">Chưa có biến động số dư.</p>';
         }
     }
 
@@ -267,7 +332,6 @@
         }
     });
 
-    // Khởi tạo
     updateAuthUI();
     fetchApiServices();
 </script>
