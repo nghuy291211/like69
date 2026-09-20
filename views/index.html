@@ -3,264 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Dịch Vụ TikTok Auto</title>
+    <title>Hệ Thống Dịch Vụ Auto API</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif; }
-        
-        body { 
-            background: #090d16; 
-            color: #f1f5f9; 
-            padding: 16px 12px; 
-            animation: fadeInBody 0.6s ease-out;
-        }
-
-        @keyframes fadeInBody {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+        body { background: #090d16; color: #f1f5f9; padding: 16px 12px; }
         .container { max-width: 520px; margin: 0 auto; }
-
-        .navbar { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            background: rgba(15, 23, 42, 0.8); 
-            backdrop-filter: blur(16px); 
-            -webkit-backdrop-filter: blur(16px);
-            padding: 12px 16px; 
-            border-radius: 16px; 
-            border: 1px solid rgba(255, 255, 255, 0.08); 
-            margin-bottom: 16px; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            transition: all 0.3s ease;
-        }
-
-        .logo { 
-            font-size: 18px; 
-            font-weight: 800; 
-            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-        }
-
-        .logo i { -webkit-text-fill-color: initial; color: #38bdf8; font-size: 19px; filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6)); }
+        .navbar { display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.8); padding: 12px 16px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 16px; }
+        .logo { font-size: 18px; font-weight: 800; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
         .nav-actions { display: flex; align-items: center; gap: 8px; }
-
-        .btn { 
-            border: none; 
-            padding: 9px 15px; 
-            border-radius: 12px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
-            font-size: 13px; 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 6px; 
-            text-decoration: none;
-        }
-        .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        .btn:active { transform: translateY(0) scale(0.96); }
-
-        .btn-login { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); }
-        .btn-admin { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: #fff; box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35); }
-        .btn-logout { background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); }
-
-        .user-info-tag {
-            background: rgba(56, 189, 248, 0.1);
-            border: 1px solid rgba(56, 189, 248, 0.25);
-            padding: 6px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #38bdf8;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
+        .btn { border: none; padding: 8px 14px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-login { background: #10b981; color: #fff; }
+        .btn-logout { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .user-info-tag { background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); padding: 6px 10px; border-radius: 10px; font-size: 12px; color: #38bdf8; font-weight: 600; }
         .balance-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-        .balance-card { 
-            background: rgba(15, 23, 42, 0.6); 
-            border: 1px solid rgba(255, 255, 255, 0.06); 
-            padding: 14px; 
-            border-radius: 16px; 
-            backdrop-filter: blur(10px);
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .balance-card:hover { transform: translateY(-3px); border-color: rgba(56, 189, 248, 0.3); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
-        .balance-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #10b981, transparent); }
-        .balance-card.api::before { background: linear-gradient(90deg, #38bdf8, transparent); }
+        .balance-card { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.06); padding: 14px; border-radius: 16px; }
         .balance-title { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; }
         .balance-value { font-size: 18px; font-weight: 800; margin-top: 4px; color: #34d399; }
         .balance-value.api { color: #38bdf8; }
-
-        .admin-contact-card {
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.6) 100%);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            border-radius: 16px;
-            padding: 14px 16px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            transition: all 0.3s ease;
-        }
-        .admin-contact-card:hover { border-color: #38bdf8; transform: translateY(-2px); }
-        .admin-info { display: flex; flex-direction: column; gap: 3px; }
-        .admin-info-title { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .admin-tiktok-id { font-size: 13px; font-weight: 700; color: #38bdf8; display: flex; align-items: center; gap: 6px; }
-        
-        .btn-zalo {
-            background: linear-gradient(135deg, #0068ff 0%, #0042a5 100%);
-            color: #fff;
-            padding: 8px 14px;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 700;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 4px 12px rgba(0, 104, 255, 0.35);
-            transition: all 0.25s ease;
-        }
-        .btn-zalo:hover { transform: scale(1.05); box-shadow: 0 6px 18px rgba(0, 104, 255, 0.5); }
-
-        .card { 
-            background: #0f172a; 
-            border-radius: 20px; 
-            padding: 20px; 
-            margin-bottom: 20px; 
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            box-shadow: 0 12px 32px rgba(0,0,0,0.4); 
-        }
-
-        .main-tabs { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            background: #050811; 
-            padding: 5px; 
-            border-radius: 14px; 
-            margin-bottom: 20px; 
-            gap: 4px; 
-        }
-        
-        .tab-item {
-            text-align: center; 
-            padding: 10px 2px; 
-            border-radius: 10px; 
-            font-size: 11px; 
-            font-weight: 700;
-            color: #64748b; 
-            cursor: pointer; 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            display: flex; 
-            flex-direction: column;
-            align-items: center; 
-            justify-content: center; 
-            gap: 4px;
-        }
-        .tab-item i { font-size: 14px; }
-        .tab-item.active { 
-            background: #1e293b; 
-            color: #38bdf8; 
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); 
-            transform: scale(1.02);
-        }
-
-        .tab-content { 
-            display: none; 
-            opacity: 0; 
-            transform: translateY(10px); 
-            transition: opacity 0.35s ease, transform 0.35s ease; 
-        }
-        .tab-content.active { 
-            display: block; 
-            opacity: 1; 
-            transform: translateY(0); 
-        }
-
+        .card { background: #0f172a; border-radius: 20px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.06); }
+        .main-tabs { display: grid; grid-template-columns: repeat(4, 1fr); background: #050811; padding: 5px; border-radius: 14px; margin-bottom: 20px; gap: 4px; }
+        .tab-item { text-align: center; padding: 10px 2px; border-radius: 10px; font-size: 11px; font-weight: 700; color: #64748b; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .tab-item.active { background: #1e293b; color: #38bdf8; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         .form-group { margin-bottom: 14px; }
         label { display: block; font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; }
-        select, input { 
-            width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #1e293b; background: #070a12; color: #fff; font-size: 13px; outline: none; transition: all 0.25s ease;
-        }
-        select:focus, input:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15); }
-
+        select, input { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #1e293b; background: #070a12; color: #fff; font-size: 13px; outline: none; }
         .total-box { background: rgba(7, 10, 18, 0.7); border: 1px dashed rgba(52, 211, 153, 0.3); padding: 14px; border-radius: 14px; text-align: center; margin: 18px 0; }
         .total-price { font-size: 22px; font-weight: 800; color: #34d399; margin-top: 4px; }
-
-        button.btn-submit { 
-            width: 100%; padding: 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; border-radius: 12px; color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35); transition: all 0.25s ease; display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-        button.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5); }
-        button.btn-submit:active { transform: scale(0.98); }
-
-        .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #1e293b; }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th, td { padding: 12px; font-size: 12px; border-bottom: 1px solid #1e293b; white-space: nowrap; }
-        th { background: #070a12; color: #38bdf8; font-weight: 700; }
-        td { color: #cbd5e1; }
-
-        .status-badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-        .status-completed { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-
-        .profile-card { background: #070a12; border-radius: 14px; border: 1px solid #1e293b; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-        .profile-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #1e293b; padding-bottom: 10px; }
-        .profile-row:last-child { border-bottom: none; padding-bottom: 0; }
-        .profile-label { font-size: 12px; color: #94a3b8; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .profile-val { font-size: 13px; font-weight: 700; color: #f1f5f9; }
-
-        .modal { 
-            display: none; position: fixed; inset: 0; background: rgba(3, 7, 18, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.3s ease;
-        }
-        .modal.show { opacity: 1; }
-
-        .modal-content { 
-            background: #0f172a; padding: 28px 24px; border-radius: 22px; width: 90%; max-width: 360px; position: relative; border: 1px solid rgba(56, 189, 248, 0.2); box-shadow: 0 20px 50px rgba(0,0,0,0.6); transform: scale(0.85); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .modal.show .modal-content { transform: scale(1); }
-
-        .close-modal { position: absolute; right: 16px; top: 16px; width: 30px; height: 30px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #94a3b8; cursor: pointer; transition: all 0.2s ease; }
-        .close-modal:hover { background: rgba(239, 68, 68, 0.2); color: #f87171; }
-
-        .status-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 10px; }
-        
-        .spinner { 
-            width: 52px; height: 52px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #38bdf8; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .success-checkmark { display: none; width: 60px; height: 60px; margin-bottom: 16px; }
-        .check-icon { width: 60px; height: 60px; border-radius: 50%; stroke-width: 3; stroke: #10b981; stroke-miterlimit: 10; box-shadow: inset 0px 0px 0px #10b981; animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both; }
-        .check-icon .circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 3; stroke-miterlimit: 10; stroke: #10b981; fill: none; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
-        .check-icon .check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards; }
-
-        @keyframes stroke { 100% { stroke-dashoffset: 0; } }
-        @keyframes scale { 0%, 100% { transform: none; } 50% { transform: scale3d(1.1, 1.1, 1); } }
-        @keyframes fill { 100% { box-shadow: inset 0px 0px 0px 30px rgba(16, 185, 129, 0.1); } }
-
-        .status-text { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px; text-align: center; }
-        .status-subtext { font-size: 12px; color: #fbbf24; text-align: center; }
+        button.btn-submit { width: 100%; padding: 14px; background: #10b981; border: none; border-radius: 12px; color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(3, 7, 18, 0.85); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: #0f172a; padding: 24px; border-radius: 20px; width: 90%; max-width: 360px; border: 1px solid rgba(56, 189, 248, 0.2); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="navbar">
-        <div class="logo"><i class="fa-brands fa-tiktok"></i> TikTok Auto</div>
-        <div class="nav-actions" id="authArea">
-            <button class="btn btn-login" onclick="openLoginModal()"><i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập</button>
-        </div>
+        <div class="logo"><i class="fa-brands fa-tiktok"></i> TikTok Auto API</div>
+        <div class="nav-actions" id="authArea"></div>
     </div>
 
     <div class="balance-container" id="balanceArea" style="display: none;">
@@ -268,36 +50,18 @@
             <div class="balance-title"><i class="fa-solid fa-wallet"></i> Số Dư Sử Dụng</div>
             <div class="balance-value" id="usableBalance">0 đ</div>
         </div>
-        <div class="balance-card api" id="apiBalanceCard" style="display: none;">
+        <div class="balance-card" id="apiBalanceCard" style="display: none;">
             <div class="balance-title"><i class="fa-solid fa-server"></i> Số Dư API Thực</div>
             <div class="balance-value api" id="apiRealBalance">0 đ</div>
         </div>
     </div>
 
-    <div class="admin-contact-card">
-        <div class="admin-info">
-            <div class="admin-info-title"><i class="fa-solid fa-headset"></i> Hỗ Trợ Kỹ Thuật</div>
-            <div class="admin-tiktok-id"><i class="fa-brands fa-tiktok"></i> TikTok: <span style="color: #fff;" id="adminTiktokId">@admin_tiktok</span></div>
-        </div>
-        <a href="https://zalo.me/0987654321" target="_blank" class="btn-zalo">
-            <i class="fa-solid fa-comment-dots"></i> Chat Zalo
-        </a>
-    </div>
-
     <div class="card">
         <div class="main-tabs">
-            <div class="tab-item active" onclick="switchMainTab('orderTab', this)">
-                <i class="fa-solid fa-cart-shopping"></i> Đặt Đơn
-            </div>
-            <div class="tab-item" onclick="switchMainTab('historyTab', this)">
-                <i class="fa-solid fa-clock-rotate-left"></i> Đơn Hàng
-            </div>
-            <div class="tab-item" onclick="switchMainTab('changesTab', this)">
-                <i class="fa-solid fa-money-bill-transfer"></i> Biến Động
-            </div>
-            <div class="tab-item" onclick="switchMainTab('profileTab', this)">
-                <i class="fa-solid fa-user-gear"></i> Tài Khoản
-            </div>
+            <div class="tab-item active" onclick="switchTab('orderTab', this)"><i class="fa-solid fa-cart-shopping"></i> Đặt Đơn</div>
+            <div class="tab-item" onclick="switchTab('historyTab', this)"><i class="fa-solid fa-clock-rotate-left"></i> Đơn Hàng</div>
+            <div class="tab-item" onclick="switchTab('changesTab', this)"><i class="fa-solid fa-money-bill-transfer"></i> Biến Động</div>
+            <div class="tab-item" onclick="switchTab('profileTab', this)"><i class="fa-solid fa-user-gear"></i> Tài Khoản</div>
         </div>
 
         <div class="tab-content active" id="orderTab">
@@ -306,193 +70,65 @@
                     <label>Phân loại dịch vụ:</label>
                     <select id="categorySelect" onchange="filterServices()"></select>
                 </div>
-
                 <div class="form-group">
                     <label>Dịch vụ cụ thể:</label>
                     <select id="serviceSelect" onchange="updateDetails()"></select>
                 </div>
-
                 <div class="form-group">
                     <label>Link Video / Profile TikTok:</label>
                     <input type="url" id="link" placeholder="https://www.tiktok.com/@..." required>
                 </div>
-
                 <div class="form-group">
                     <label>Số lượng:</label>
                     <input type="number" id="quantity" value="1000" oninput="calculateTotal()" required>
                     <small id="limitHint" style="color: #64748b; font-size: 11px; margin-top: 4px; display: block;"></small>
                 </div>
-
                 <div class="total-box">
                     <span style="font-size: 12px; color: #94a3b8;">Tổng tiền cần thanh toán:</span>
                     <div class="total-price" id="totalPrice">0 đ</div>
                 </div>
-
-                <button type="submit" class="btn-submit" id="orderBtn">
-                    <i class="fa-solid fa-bolt"></i> Tạo Đơn Hàng Ngay
-                </button>
+                <button type="submit" class="btn-submit">Tạo Đơn Hàng Ngay</button>
             </form>
         </div>
 
-        <div class="tab-content" id="historyTab">
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Mã Đơn</th>
-                            <th>Dịch Vụ</th>
-                            <th>S.Lượng</th>
-                            <th>Tổng Tiền</th>
-                            <th>Trạng Thái</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTableBody">
-                        <tr><td colspan="5" style="text-align: center; color: #64748b; padding: 20px;">Đang tải dữ liệu...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="tab-content" id="changesTab">
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Số Tiền</th>
-                            <th>Số Dư Cuối</th>
-                            <th>Nội Dung</th>
-                            <th>Thời Gian</th>
-                        </tr>
-                    </thead>
-                    <tbody id="balanceChangesTableBody">
-                        <tr><td colspan="4" style="text-align: center; color: #64748b; padding: 20px;">Đang tải biến động...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="tab-content" id="profileTab">
-            <div class="profile-card" id="profileContent">
-                <div style="text-align: center; color: #ef4444; padding: 10px;">Vui lòng đăng nhập để xem thông tin!</div>
-            </div>
-        </div>
+        <div class="tab-content" id="historyTab"><div id="historyList"></div></div>
+        <div class="tab-content" id="changesTab"><div id="changesList"></div></div>
+        <div class="tab-content" id="profileTab"><div id="profileContent"></div></div>
     </div>
 </div>
 
 <div class="modal" id="loginModal">
     <div class="modal-content">
-        <div class="close-modal" onclick="closeLoginModal()"><i class="fa-solid fa-xmark"></i></div>
-        <div style="text-align: center; margin-bottom: 20px;">
-            <div style="width: 54px; height: 54px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #38bdf8; font-size: 22px;">
-                <i class="fa-solid fa-shield-halved"></i>
-            </div>
-            <h3 style="font-size: 16px; margin-bottom: 2px;">Đăng Nhập</h3>
-            <p style="font-size: 12px; color: #64748b;">Nhập tài khoản để tiếp tục</p>
-        </div>
+        <h3 style="margin-bottom: 12px;">Đăng Nhập</h3>
         <form id="loginForm">
             <div class="form-group">
                 <label>Tài khoản</label>
-                <input type="text" id="loginUsername" required placeholder="Tên tài khoản...">
+                <input type="text" id="loginUsername" required>
             </div>
             <div class="form-group">
                 <label>Mật khẩu</label>
-                <input type="password" id="loginPassword" required placeholder="••••••••">
+                <input type="password" id="loginPassword" required>
             </div>
-            <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); margin-top: 10px;">
-                Đăng Nhập
-            </button>
+            <button type="submit" class="btn-submit">Đăng Nhập</button>
         </form>
-    </div>
-</div>
-
-<div class="modal" id="statusModal">
-    <div class="modal-content">
-        <div class="status-container">
-            <div class="spinner" id="modalSpinner"></div>
-            <div class="success-checkmark" id="modalCheckmark">
-                <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                    <circle class="circle" cx="26" cy="26" r="25" fill="none"/>
-                    <path class="check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                </svg>
-            </div>
-            <div class="status-text" id="statusTitle">Đang xử lý đơn hàng...</div>
-            <div class="status-subtext" id="statusSubtitle">Vui lòng không đóng trang web</div>
-        </div>
     </div>
 </div>
 
 <script>
     let currentUser = JSON.parse(localStorage.getItem('user'));
-    let allServices = [];
+    let apiServices = [];
+    let currentCalculatedPrice = 0;
 
-    // Hàm định dạng tiền tệ tối đa 3 chữ số thập phân, phân cách bằng dấu phẩy
     function formatMoney(amount) {
-        if (amount === null || amount === undefined || isNaN(amount)) return '0 đ';
-        
-        let num = typeof amount === 'string' ? parseFloat(amount.replace(',', '.')) : Number(amount);
-        if (isNaN(num)) return '0 đ';
-
-        num = Math.round(num * 1000) / 1000;
-
-        let parts = num.toString().split('.');
-        let integerPart = parseInt(parts[0], 10).toLocaleString('vi-VN');
-        let decimalPart = parts[1] || '';
-
-        if (decimalPart.length > 0) {
-            decimalPart = decimalPart.substring(0, 3);
-            return `${integerPart},${decimalPart} đ`;
-        }
-
-        return `${integerPart} đ`;
+        let num = Number(amount) || 0;
+        return num.toLocaleString('vi-VN', { maximumFractionDigits: 3 }) + ' đ';
     }
 
-    function switchMainTab(tabId, element) {
-        document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        
+    function switchTab(tabId, element) {
+        document.querySelectorAll('.tab-item').forEach(e => e.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
         element.classList.add('active');
-        const targetTab = document.getElementById(tabId);
-        targetTab.classList.add('active');
-
-        if(tabId === 'historyTab') loadOrderHistory();
-        if(tabId === 'changesTab') loadBalanceChanges();
-        if(tabId === 'profileTab') renderProfile();
-    }
-
-    function openModal(id) {
-        const modal = document.getElementById(id);
-        modal.style.display = 'flex';
-        setTimeout(() => modal.classList.add('show'), 10);
-    }
-
-    function closeModal(id) {
-        const modal = document.getElementById(id);
-        modal.classList.remove('show');
-        setTimeout(() => modal.style.display = 'none', 300);
-    }
-
-    function openLoginModal() { openModal('loginModal'); }
-    function closeLoginModal() { closeModal('loginModal'); }
-
-    function showLoadingStatus() {
-        document.getElementById('modalSpinner').style.display = 'block';
-        document.getElementById('modalCheckmark').style.display = 'none';
-        document.getElementById('statusTitle').innerText = 'Hiện đang đặt hàng...';
-        document.getElementById('statusTitle').style.color = '#ffffff';
-        document.getElementById('statusSubtitle').innerText = 'Vui lòng không đóng trang web';
-        document.getElementById('statusSubtitle').style.color = '#fbbf24';
-        openModal('statusModal');
-    }
-
-    function showSuccessStatus(orderId) {
-        document.getElementById('modalSpinner').style.display = 'none';
-        document.getElementById('modalCheckmark').style.display = 'block';
-        document.getElementById('statusTitle').innerText = 'Tạo Đơn Thành Công!';
-        document.getElementById('statusTitle').style.color = '#34d399';
-        document.getElementById('statusSubtitle').innerText = `Mã đơn hàng: #${orderId}`;
-        document.getElementById('statusSubtitle').style.color = '#94a3b8';
-
-        setTimeout(() => { closeModal('statusModal'); }, 2200);
+        document.getElementById(tabId).classList.add('active');
     }
 
     function updateAuthUI() {
@@ -500,16 +136,14 @@
         const balanceArea = document.getElementById('balanceArea');
 
         if (currentUser) {
-            let adminBtn = currentUser.role === 'root_admin' ? `<a href="/admin.html" class="btn btn-admin"><i class="fa-solid fa-user-gear"></i> Admin</a>` : '';
             authArea.innerHTML = `
-                ${adminBtn}
                 <div class="user-info-tag"><i class="fa-solid fa-user"></i> ${currentUser.username}</div>
                 <button class="btn btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
             `;
             balanceArea.style.display = 'grid';
             loadBalance();
         } else {
-            authArea.innerHTML = `<button class="btn btn-login" onclick="openLoginModal()"><i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập</button>`;
+            authArea.innerHTML = `<button class="btn btn-login" onclick="document.getElementById('loginModal').style.display='flex'">Đăng Nhập</button>`;
             balanceArea.style.display = 'none';
         }
     }
@@ -518,158 +152,72 @@
         localStorage.removeItem('user');
         currentUser = null;
         updateAuthUI();
-        renderProfile();
     }
 
     async function loadBalance() {
         if (!currentUser) return;
-        const res = await fetch(`/api/user/balance?username=${currentUser.username}`);
+        const res = await fetch(`/api/user/balance?username=${encodeURIComponent(currentUser.username)}`);
         const data = await res.json();
         if (data.status === 'success') {
-            document.getElementById('usableBalance').innerText = formatMoney(data.usableBalance || data.balance || 0);
+            document.getElementById('usableBalance').innerText = formatMoney(data.usableBalance);
             if (data.role === 'root_admin') {
                 document.getElementById('apiBalanceCard').style.display = 'block';
-                document.getElementById('apiRealBalance').innerText = formatMoney(data.realApiBalance || 0);
+                document.getElementById('apiRealBalance').innerText = formatMoney(data.realApiBalance);
             }
         }
     }
 
-    async function loadServices() {
-        const res = await fetch('/api/services');
-        const data = await res.json();
-        if (data.status === 'success' && data.data.length > 0) {
-            allServices = data.data;
-            const categories = [...new Set(allServices.map(s => s.category))];
-            const catSelect = document.getElementById('categorySelect');
-            catSelect.innerHTML = '';
-            categories.forEach(c => catSelect.innerHTML += `<option value="${c}">${c}</option>`);
-            filterServices();
+    // Tải dịch vụ TRỰC TIẾP từ API
+    async function fetchApiServices() {
+        try {
+            const res = await fetch('/api/services');
+            const data = await res.json();
+            if (data.status === 'success' && Array.isArray(data.data)) {
+                apiServices = data.data;
+
+                // Lấy danh sách danh mục (category) không trùng lặp từ API
+                const categories = [...new Set(apiServices.map(s => s.category))];
+                const catSelect = document.getElementById('categorySelect');
+                catSelect.innerHTML = '';
+                categories.forEach(c => catSelect.innerHTML += `<option value="${c}">${c}</option>`);
+
+                filterServices();
+            }
+        } catch (e) {
+            console.error("Lỗi lấy dữ liệu API dịch vụ:", e);
         }
     }
 
     function filterServices() {
         const cat = document.getElementById('categorySelect').value;
-        const filtered = allServices.filter(s => s.category === cat);
+        const filtered = apiServices.filter(s => s.category === cat);
         const serviceSelect = document.getElementById('serviceSelect');
         serviceSelect.innerHTML = '';
         filtered.forEach(s => {
-            serviceSelect.innerHTML += `<option value="${s.service}">[ID ${s.service}] ${s.name} - ${formatMoney(s.rate)} / 1k</option>`;
+            const rateFormatted = formatMoney(s.rate);
+            serviceSelect.innerHTML += `<option value="${s.service}">[ID ${s.service}] ${s.name} - ${rateFormatted} / 1k</option>`;
         });
         updateDetails();
     }
 
     function updateDetails() {
         const serviceId = document.getElementById('serviceSelect').value;
-        const service = allServices.find(s => s.service == serviceId);
+        const service = apiServices.find(s => s.service == serviceId);
         if (service) {
-            document.getElementById('limitHint').innerText = `Tối thiểu: ${service.min.toLocaleString('vi-VN')} - Tối đa: ${service.max.toLocaleString('vi-VN')}`;
+            document.getElementById('limitHint').innerText = `Tối thiểu: ${Number(service.min).toLocaleString('vi-VN')} - Tối đa: ${Number(service.max).toLocaleString('vi-VN')}`;
             calculateTotal();
         }
     }
 
     function calculateTotal() {
         const serviceId = document.getElementById('serviceSelect').value;
-        const qty = parseInt(document.getElementById('quantity').value) || 0;
-        const service = allServices.find(s => s.service == serviceId);
+        const qty = parseFloat(document.getElementById('quantity').value) || 0;
+        const service = apiServices.find(s => s.service == serviceId);
+
         if (service) {
-            const total = (qty / 1000) * service.rate;
-            document.getElementById('totalPrice').innerText = formatMoney(total);
-        }
-    }
-
-    function renderProfile() {
-        const container = document.getElementById('profileContent');
-        if (!currentUser) {
-            container.innerHTML = `<div style="text-align: center; color: #ef4444; padding: 10px;">Vui lòng đăng nhập để xem thông tin!</div>`;
-            return;
-        }
-
-        const roleText = currentUser.role === 'root_admin' ? '<span style="color:#38bdf8; font-weight:800;">Quản Trị Viên</span>' : '<span style="color:#10b981;">Thành Viên</span>';
-        
-        container.innerHTML = `
-            <div class="profile-row">
-                <div class="profile-label"><i class="fa-solid fa-user-tag" style="color:#38bdf8;"></i> Tên Tài Khoản</div>
-                <div class="profile-val">${currentUser.username}</div>
-            </div>
-            <div class="profile-row">
-                <div class="profile-label"><i class="fa-solid fa-shield-halved" style="color:#fbbf24;"></i> Cấp Độ</div>
-                <div class="profile-val">${roleText}</div>
-            </div>
-            <div class="profile-row">
-                <div class="profile-label"><i class="fa-solid fa-wallet" style="color:#10b981;"></i> Số Dư Hiện Tại</div>
-                <div class="profile-val" style="color:#34d399;">${document.getElementById('usableBalance').innerText}</div>
-            </div>
-            <div class="profile-row">
-                <div class="profile-label"><i class="fa-solid fa-circle-check" style="color:#a855f7;"></i> Trạng Thái</div>
-                <div class="profile-val" style="color:#a855f7;">Hoạt Động</div>
-            </div>
-        `;
-    }
-
-    async function loadOrderHistory() {
-        if (!currentUser) {
-            document.getElementById('historyTableBody').innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ef4444;">Vui lòng đăng nhập trước!</td></tr>`;
-            return;
-        }
-
-        try {
-            const res = await fetch(`/api/user/orders?username=${currentUser.username}`);
-            const data = await res.json();
-            const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = '';
-
-            if (data.status === 'success' && data.data.length > 0) {
-                data.data.forEach(order => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><b>#${order.id || order.orderId}</b></td>
-                            <td>${order.serviceName || order.service}</td>
-                            <td>${Number(order.quantity).toLocaleString('vi-VN')}</td>
-                            <td style="color:#34d399; font-weight:700;">${formatMoney(order.price)}</td>
-                            <td><span class="status-badge status-completed">Thành công</span></td>
-                        </tr>
-                    `;
-                });
-            } else {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b;">Chưa có đơn hàng nào</td></tr>`;
-            }
-        } catch (e) {
-            document.getElementById('historyTableBody').innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ef4444;">Không thể tải lịch sử đơn</td></tr>`;
-        }
-    }
-
-    async function loadBalanceChanges() {
-        if (!currentUser) {
-            document.getElementById('balanceChangesTableBody').innerHTML = `<tr><td colspan="4" style="text-align: center; color: #ef4444;">Vui lòng đăng nhập trước!</td></tr>`;
-            return;
-        }
-
-        try {
-            const res = await fetch(`/api/user/balance-changes?username=${currentUser.username}`);
-            const data = await res.json();
-            const tbody = document.getElementById('balanceChangesTableBody');
-            tbody.innerHTML = '';
-
-            if (data.status === 'success' && data.data.length > 0) {
-                data.data.forEach(item => {
-                    const isPlus = item.amount > 0;
-                    const amountColor = isPlus ? '#34d399' : '#f87171';
-                    const sign = isPlus ? '+' : '';
-
-                    tbody.innerHTML += `
-                        <tr>
-                            <td style="color:${amountColor}; font-weight:700;">${sign}${formatMoney(item.amount)}</td>
-                            <td>${formatMoney(item.lastBalance)}</td>
-                            <td>${item.description}</td>
-                            <td style="color:#64748b; font-size:11px;">${item.time}</td>
-                        </tr>
-                    `;
-                });
-            } else {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #64748b;">Chưa có biến động số dư nào</td></tr>`;
-            }
-        } catch (e) {
-            document.getElementById('balanceChangesTableBody').innerHTML = `<tr><td colspan="4" style="text-align: center; color: #64748b;">Tạo đơn thành công sẽ tự động ghi lịch sử biến động</td></tr>`;
+            // Rate của API là giá trên 1,000 lượt
+            currentCalculatedPrice = (qty / 1000) * Number(service.rate);
+            document.getElementById('totalPrice').innerText = formatMoney(currentCalculatedPrice);
         }
     }
 
@@ -687,7 +235,7 @@
         if (res.ok && data.status === 'success') {
             localStorage.setItem('user', JSON.stringify(data.user));
             currentUser = data.user;
-            closeLoginModal();
+            document.getElementById('loginModal').style.display = 'none';
             updateAuthUI();
         } else {
             alert(data.message);
@@ -696,44 +244,32 @@
 
     document.getElementById('orderForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!currentUser) { alert("Vui lòng đăng nhập trước!"); openLoginModal(); return; }
-        
-        showLoadingStatus();
+        if (!currentUser) return alert("Vui lòng đăng nhập!");
 
-        try {
-            const serviceId = document.getElementById('serviceSelect').value;
-            const qty = document.getElementById('quantity').value;
-            const service = allServices.find(s => s.service == serviceId);
-            const cost = (qty / 1000) * service.rate;
+        const res = await fetch('/api/order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: currentUser.username,
+                service: document.getElementById('serviceSelect').value,
+                link: document.getElementById('link').value,
+                quantity: document.getElementById('quantity').value,
+                price: currentCalculatedPrice
+            })
+        });
 
-            const res = await fetch('/api/order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: currentUser.username,
-                    service: serviceId,
-                    link: document.getElementById('link').value,
-                    quantity: qty,
-                    price: cost
-                })
-            });
-
-            const data = await res.json();
-            if (res.ok && data.status === 'success') {
-                showSuccessStatus(data.orderId);
-                loadBalance();
-            } else {
-                closeModal('statusModal');
-                alert(`Lỗi: ${data.message || 'Không thể tạo đơn'}`);
-            }
-        } catch (error) {
-            closeModal('statusModal');
-            alert("Lỗi kết nối tới máy chủ");
+        const data = await res.json();
+        if (res.ok && data.status === 'success') {
+            alert(`Tạo đơn thành công! Mã đơn API #${data.orderId}`);
+            loadBalance();
+        } else {
+            alert(`Lỗi: ${data.message}`);
         }
     });
 
+    // Khởi tạo
     updateAuthUI();
-    loadServices();
+    fetchApiServices();
 </script>
 </body>
 </html>
