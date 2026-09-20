@@ -69,7 +69,7 @@
         .total-box { background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3); padding: 16px; border-radius: 14px; text-align: center; margin: 20px 0; }
         .total-price { font-size: 24px; font-weight: 800; color: #34d399; margin-top: 4px; text-shadow: 0 0 10px rgba(52, 211, 153, 0.2); }
         
-        /* Submit Button with Loading & Success States */
+        /* Submit Button */
         button.btn-submit { width: 100%; padding: 14px; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 12px; color: #fff; font-weight: 800; font-size: 15px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; gap: 8px; }
         button.btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); }
         button.btn-submit:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
@@ -79,17 +79,23 @@
 
         /* Modal Login */
         .modal { display: none; position: fixed; inset: 0; background: rgba(3, 7, 18, 0.85); backdrop-filter: blur(8px); justify-content: center; align-items: center; z-index: 9999; }
-        .modal-content { background: var(--bg-card); padding: 28px 24px 24px 24px; border-radius: 24px; width: 90%; max-width: 380px; border: 1px solid rgba(14, 165, 233, 0.25); position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.6); text-align: center; }
+        .modal-content { background: var(--bg-card); padding: 24px; border-radius: 24px; width: 90%; max-width: 380px; border: 1px solid rgba(14, 165, 233, 0.25); position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.6); text-align: center; }
         .close-modal { position: absolute; top: 16px; right: 18px; font-size: 20px; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
         .close-modal:hover { color: #fff; }
         
-        .shield-icon-wrapper { width: 64px; height: 64px; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px auto; box-shadow: 0 0 20px rgba(14, 165, 233, 0.2); }
-        .shield-icon-wrapper i { font-size: 30px; color: var(--primary); }
+        .shield-icon-wrapper { width: 56px; height: 56px; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; box-shadow: 0 0 20px rgba(14, 165, 233, 0.2); }
+        .shield-icon-wrapper i { font-size: 26px; color: var(--primary); }
 
         .list-item { background: var(--bg-input); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); margin-bottom: 10px; font-size: 12px; }
         .status-badge { display: inline-block; padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: 800; }
         .status-on { background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
         .status-off { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        /* Nút ẩn/hiện mắt mật khẩu Admin */
+        .toggle-eye-btn { background: rgba(14, 165, 233, 0.15); border: 1px solid rgba(14, 165, 233, 0.3); color: var(--primary); padding: 4px 8px; border-radius: 8px; cursor: pointer; font-size: 11px; margin-left: 6px; transition: 0.2s; }
+        .toggle-eye-btn:hover { background: rgba(14, 165, 233, 0.3); }
+
+        .admin-section-box { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); padding: 16px; border-radius: 16px; margin-bottom: 20px; }
 
         .support-box { background: rgba(14, 165, 233, 0.05); border: 1px solid rgba(14, 165, 233, 0.2); border-radius: 16px; padding: 16px; margin-top: 16px; }
         .support-title { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
@@ -182,26 +188,53 @@
         
         <!-- Tab Quản Lý Admin -->
         <div class="tab-content" id="adminTab">
-            <h4 style="margin-bottom: 14px; color: var(--primary); font-size: 14px;"><i class="fa-solid fa-coins"></i> Cộng / Trừ Tiền Thành Viên</h4>
-            <div class="form-group">
-                <label><i class="fa-solid fa-user"></i> Tên tài khoản nhận:</label>
-                <div class="input-wrapper">
-                    <i class="fa-solid fa-at input-icon"></i>
-                    <input type="text" id="adminTargetUser" placeholder="Nhập username">
-                </div>
-            </div>
-            <div class="form-group">
-                <label><i class="fa-solid fa-money-bill-wave"></i> Số tiền (VNĐ):</label>
-                <div class="input-wrapper">
-                    <i class="fa-solid fa-dong-sign input-icon"></i>
-                    <input type="number" id="adminAmount" placeholder="Ví dụ: 100000">
-                </div>
-            </div>
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button type="button" class="btn btn-login" style="flex:1; justify-content:center;" onclick="adjustBalance('add')"><i class="fa-solid fa-plus"></i> Cộng Tiền</button>
-                <button type="button" class="btn btn-logout" style="flex:1; justify-content:center;" onclick="adjustBalance('subtract')"><i class="fa-solid fa-minus"></i> Trừ Tiền</button>
-            </div>
             
+            <!-- Mục 1: Đã chuyển sang cấp tài khoản trực tiếp trong Admin -->
+            <div class="admin-section-box">
+                <h4 style="margin-bottom: 12px; color: #38bdf8; font-size: 14px;"><i class="fa-solid fa-user-plus"></i> Tạo Tài Khoản User Mới</h4>
+                <div class="form-group">
+                    <label><i class="fa-solid fa-user"></i> Tên tài khoản user:</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-at input-icon"></i>
+                        <input type="text" id="createUserUsername" placeholder="Nhập username mới">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><i class="fa-solid fa-lock"></i> Mật khẩu cấp cho user:</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-key input-icon"></i>
+                        <input type="text" id="createUserPassword" placeholder="Nhập mật khẩu cấp">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-login" style="width: 100%; justify-content: center;" onclick="createNewUserByAdmin()">
+                    <i class="fa-solid fa-user-check"></i> Cấp Tài Khoản Mới
+                </button>
+            </div>
+
+            <!-- Mục 2: Cộng Trừ Tiền -->
+            <div class="admin-section-box">
+                <h4 style="margin-bottom: 12px; color: #38bdf8; font-size: 14px;"><i class="fa-solid fa-coins"></i> Cộng / Trừ Tiền Thành Viên</h4>
+                <div class="form-group">
+                    <label><i class="fa-solid fa-user"></i> Tên tài khoản nhận:</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-at input-icon"></i>
+                        <input type="text" id="adminTargetUser" placeholder="Nhập username">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><i class="fa-solid fa-money-bill-wave"></i> Số tiền (VNĐ):</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-dong-sign input-icon"></i>
+                        <input type="number" id="adminAmount" placeholder="Ví dụ: 100000">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn btn-login" style="flex:1; justify-content:center;" onclick="adjustBalance('add')"><i class="fa-solid fa-plus"></i> Cộng Tiền</button>
+                    <button type="button" class="btn btn-logout" style="flex:1; justify-content:center;" onclick="adjustBalance('subtract')"><i class="fa-solid fa-minus"></i> Trừ Tiền</button>
+                </div>
+            </div>
+
+            <!-- Mục 3: Danh sách User -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <h4 style="color: var(--primary); font-size: 14px;"><i class="fa-solid fa-users"></i> Danh Sách Người Dùng</h4>
                 <button class="btn btn-login" style="padding: 6px 10px; font-size: 11px;" onclick="loadAdminData()"><i class="fa-solid fa-rotate"></i> Làm mới</button>
@@ -210,22 +243,23 @@
         </div>
     </div>
 
+    <!-- Sửa link Zalo thành zalo.me/0862695221 -->
     <div class="support-box">
         <div class="support-title"><i class="fa-solid fa-headset"></i> Trung Tâm Hỗ Trợ Kỹ Thuật</div>
-        <a href="https://zalo.me" target="_blank" class="support-btn"><i class="fa-solid fa-comment-dots"></i> Hỗ Trợ Qua Zalo</a>
+        <a href="https://zalo.me/0862695221" target="_blank" class="support-btn"><i class="fa-solid fa-comment-dots"></i> Hỗ Trợ Qua Zalo</a>
     </div>
 </div>
 
-<!-- Modal Đăng Nhập -->
+<!-- Modal Đăng Nhập (Đã xóa Đăng Ký Public) -->
 <div class="modal" id="loginModal">
     <div class="modal-content">
         <span class="close-modal" onclick="closeLoginModal()">&times;</span>
         <div class="shield-icon-wrapper">
             <i class="fa-solid fa-shield-halved"></i>
         </div>
-        <h3 style="margin-bottom: 6px; color: var(--text-main); font-size: 18px; font-weight: 800;">Đăng Nhập Hệ Thống</h3>
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">Vui lòng nhập tài khoản để tiếp tục sử dụng</p>
         
+        <h3 style="margin-bottom: 16px; color: var(--primary); font-size: 16px;">Đăng Nhập Hệ Thống</h3>
+
         <form id="loginForm">
             <div class="form-group" style="text-align: left;">
                 <label><i class="fa-solid fa-user"></i> Tài khoản</label>
@@ -241,7 +275,7 @@
                     <input type="password" id="loginPassword" placeholder="Nhập mật khẩu" required>
                 </div>
             </div>
-            <button type="submit" class="btn-submit" style="margin-top: 10px;"><i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập</button>
+            <button type="submit" class="btn-submit" style="margin-top: 10px;"><i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập Ngay</button>
         </form>
     </div>
 </div>
@@ -390,7 +424,7 @@
         profileBox.innerHTML = `
             <div class="list-item" style="margin-bottom: 20px;">
                 <p style="margin-bottom: 8px;"><strong><i class="fa-solid fa-user-tag"></i> Tài khoản hiện tại:</strong> ${currentUser.username}</p>
-                <p><strong><i class="fa-solid fa-shield-halved"></i> Cấp độ:</strong> ${currentUser.role === 'root_admin' ? '<span style="color: #38bdf8; font-weight: bold;">Root Admin</span>' : 'Thành viên'}</p>
+                <p><strong><i class="fa-solid fa-shield-halved"></i> Cấp độ:</strong> ${currentUser.role === 'root_admin' ? '<span style="color: #38bdf8; font-weight: bold;">Root Admin</span>' : 'Thành viên (User)'}</p>
             </div>
             
             <h4 style="margin-bottom: 14px; color: var(--primary); font-size: 14px;"><i class="fa-solid fa-key"></i> Đổi Tên Đăng Nhập & Mật Khẩu</h4>
@@ -439,6 +473,63 @@
         });
     }
 
+    // Hàm ẩn một phần username
+    function maskUsername(username) {
+        if (!username || username.length <= 2) return username + '***';
+        return username.substring(0, 2) + '***';
+    }
+
+    // Toggle Ẩn / Hiện mật khẩu + username ở Admin
+    function toggleUserSensData(index, rawUser, rawPass) {
+        const userSpan = document.getElementById(`user-val-${index}`);
+        const passSpan = document.getElementById(`pass-val-${index}`);
+        const btnIcon = document.getElementById(`eye-icon-${index}`);
+
+        if (passSpan.dataset.hidden === 'true') {
+            userSpan.innerText = rawUser;
+            passSpan.innerText = rawPass;
+            passSpan.dataset.hidden = 'false';
+            btnIcon.className = 'fa-solid fa-eye-slash';
+        } else {
+            userSpan.innerText = maskUsername(rawUser);
+            passSpan.innerText = '••••••••';
+            passSpan.dataset.hidden = 'true';
+            btnIcon.className = 'fa-solid fa-eye';
+        }
+    }
+
+    // Admin tạo tài khoản User mới cho người khác
+    async function createNewUserByAdmin() {
+        const newUsername = document.getElementById('createUserUsername').value.trim();
+        const newPassword = document.getElementById('createUserPassword').value;
+
+        if (!newUsername || !newPassword) {
+            return showToast("Vui lòng điền đầy đủ Tên tài khoản và Mật khẩu!", "error");
+        }
+
+        try {
+            const res = await fetch('/api/admin/create-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    adminUsername: currentUser.username,
+                    username: newUsername,
+                    password: newPassword
+                })
+            });
+
+            const data = await res.json();
+            showToast(data.message, data.status === 'success' ? 'success' : 'error');
+            if (data.status === 'success') {
+                document.getElementById('createUserUsername').value = '';
+                document.getElementById('createUserPassword').value = '';
+                loadAdminData();
+            }
+        } catch (err) {
+            showToast("Lỗi kết nối máy chủ tạo tài khoản", "error");
+        }
+    }
+
     async function loadAdminData() {
         if (!currentUser || currentUser.role !== 'root_admin') return;
         const res = await fetch(`/api/admin/users?adminUsername=${encodeURIComponent(currentUser.username)}`);
@@ -446,13 +537,18 @@
         const box = document.getElementById('adminUserList');
 
         if (data.status === 'success') {
-            box.innerHTML = data.data.map(u => `
+            box.innerHTML = data.data.map((u, idx) => `
                 <div class="list-item">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <strong><i class="fa-solid fa-user"></i> ${u.username} (${u.role})</strong>
-                        <span class="status-badge ${u.status === 'ON' ? 'status-on' : 'status-off'}">${u.status}</span>
+                        <strong><i class="fa-solid fa-user"></i> <span id="user-val-${idx}">${maskUsername(u.username)}</span> (${u.role})</strong>
+                        <div>
+                            <span class="status-badge ${u.status === 'ON' ? 'status-on' : 'status-off'}">${u.status}</span>
+                            <button class="toggle-eye-btn" onclick="toggleUserSensData(${idx}, '${u.username}', '${u.password}')">
+                                <i class="fa-solid fa-eye" id="eye-icon-${idx}"></i>
+                            </button>
+                        </div>
                     </div>
-                    <p style="margin-bottom: 4px;"><strong><i class="fa-solid fa-key"></i> Mật khẩu:</strong> <span style="color: #f87171;">${u.password}</span></p>
+                    <p style="margin-bottom: 4px;"><strong><i class="fa-solid fa-key"></i> Mật khẩu:</strong> <span style="color: #f87171;" id="pass-val-${idx}" data-hidden="true">••••••••</span></p>
                     <p style="margin-bottom: 4px;"><strong><i class="fa-solid fa-network-wired"></i> IP Đăng Nhập:</strong> <span style="color: var(--primary);">${u.ip}</span></p>
                     <p style="margin-bottom: 4px;"><strong><i class="fa-solid fa-wallet"></i> Số Dư:</strong> ${formatMoney(u.balance)}</p>
                     <p style="color: var(--text-muted); font-size: 10px; margin-top: 4px;"><i class="fa-solid fa-clock"></i> Hoạt động cuối: ${u.lastActive}</p>
@@ -567,7 +663,6 @@
         const btnIcon = document.getElementById('btnIcon');
         const btnText = document.getElementById('btnText');
 
-        // Bật trạng thái Loading
         btn.disabled = true;
         btn.classList.add('loading-state');
         btnIcon.className = 'fa-solid fa-spinner fa-spin';
@@ -589,7 +684,6 @@
             const data = await res.json();
 
             if (res.ok && data.status === 'success') {
-                // Đổi icon sang Dấu Tích V Xanh Thành Công
                 btn.classList.remove('loading-state');
                 btn.classList.add('success-state');
                 btnIcon.className = 'fa-solid fa-circle-check';
@@ -598,7 +692,6 @@
                 showToast(`Tạo đơn thành công! Mã đơn API #${data.orderId}`);
                 loadBalance();
 
-                // Trở về trạng thái ban đầu sau 2.5 giây
                 setTimeout(() => {
                     btn.disabled = false;
                     btn.classList.remove('success-state');
