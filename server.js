@@ -14,23 +14,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'views')));
 
-// ========================================================
-// CƠ SỞ DỮ LIỆU TÀI KHOẢN & ĐƠN HÀNG (MEMDB)
-// ========================================================
+// Cơ sở dữ liệu tài khoản
 const users = {
     "nghuy291211": {
         username: "nghuy291211",
         password: "Huy@122011@",
         role: "root_admin",
-        balance: 0 // Admin gốc dùng số dư trực tiếp từ API
+        balance: 0
     }
 };
-
-const orders = [];
-
-// ========================================================
-// ROUTE BẢO MẬT & API
-// ========================================================
 
 // Đăng nhập
 app.post('/api/login', (req, res) => {
@@ -47,16 +39,55 @@ app.post('/api/login', (req, res) => {
     });
 });
 
-// Lấy thông tin số dư (Tính toán riêng cho Admin gốc và User con)
+// Lấy danh sách Dịch vụ
+app.get('/api/services', async (req, res) => {
+    try {
+        if (!PROVIDER_API_KEY) {
+            return res.status(500).json({ status: 'error', message: 'Chưa cấu hình API Key trên Render!' });
+        }
+
+        const params = new URLSearchParams();
+        params.append('key', PROVIDER_API_KEY);
+        params.append('action', 'services');
+
+        const response = await axios.post(PROVIDER_API_URL, params, {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        });
+
+        if (!Array.isArray(response.data)) {
+            return res.status(400).json({ status: 'error', message: 'Không lấy được danh sách dịch vụ!' });
+        }
+
+        const tiktokServices = response.data
+            .filter(item => {
+                const name = (item.name || '').toLowerCase();
+                const category = (item.category || '').toLowerCase();
+                return name.includes('tiktok') || category.includes('tiktok');
+            })
+            .map(item => ({
+                service: item.service,
+                name: item.name,
+                category: item.category || 'TikTok Dịch Vụ',
+                rate: parseFloat(item.rate) * PROFIT_MARKUP,
+                min: parseInt(item.min) || 50,
+                max: parseInt(item.max) || 5000000
+            }));
+
+        res.json({ status: 'success', data: tiktokServices });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: 'Lỗi kết nối API nhà cung cấp!' });
+    }
+});
+
+// Lấy Số dư
 app.get('/api/user/balance', async (req, res) => {
     const username = req.query.username;
     const user = users[username];
 
-    if (!user) return res.status(404).json({ status: 'error', message: 'User không tồn tại!' });
+    if (!user) return res.status(404).json({ status: 'error', message: 'Tài khoản không tồn tại!' });
 
     if (user.role === 'root_admin') {
         try {
-            // 1. Gọi số dư gốc từ API nhà cung cấp
             const params = new URLSearchParams();
             params.append('key', PROVIDER_API_KEY);
             params.append('action', 'balance');
@@ -66,29 +97,22 @@ app.get('/api/user/balance', async (req, res) => {
             });
 
             const realApiBalance = parseFloat(apiRes.data.balance || 0);
-
-            // 2. Tính tổng số dư đã gán cho tất cả tài khoản con
-            let totalSubUserBalance = 0;
+            let totalSubBalance = 0;
             Object.values(users).forEach(u => {
-                if (u.role !== 'root_admin') totalSubUserBalance += u.balance;
+                if (u.role !== 'root_admin') totalSubBalance += u.balance;
             });
 
-            // 3. Số dư khả dụng = Số dư API - Số dư các tài khoản con
-            const usableBalance = realApiBalance - totalSubUserBalance;
-
-            return res.json({
+            res.json({
                 status: 'success',
                 role: 'root_admin',
                 realApiBalance,
-                usableBalance,
-                allocatedToSubs: totalSubUserBalance
+                usableBalance: realApiBalance - totalSubBalance
             });
-        } catch (error) {
-            return res.status(500).json({ status: 'error', message: 'Lỗi lấy số dư từ API nguồn!' });
+        } catch (e) {
+            res.status(500).json({ status: 'error', message: 'Lỗi kết nối lấy số dư API!' });
         }
     } else {
-        // Tài khoản con chỉ lấy số dư được cấp
-        return res.json({
+        res.json({
             status: 'success',
             role: 'sub_user',
             balance: user.balance
@@ -96,89 +120,68 @@ app.get('/api/user/balance', async (req, res) => {
     }
 });
 
-// Admin gốc tạo/cập nhật tài khoản con
-app.post('/api/admin/manage-user', (req, res) => {
-    const { adminUsername, targetUsername, targetPassword, setBalance } = req.body;
+// Admin API: Tạo Tài Khoản Con
+app.post('/api/admin/create-user', (req, res) => {
+    const { adminUsername, newUsername, newPassword, initialBalance } = req.body;
 
-    if (users[adminUsername]?.role !== 'root_admin') {
-        return res.status(403).json({ status: 'error', message: 'Bạn không có quyền Admin gốc!' });
-    }
-
-    if (!targetUsername) return res.status(400).json({ status: 'error', message: 'Nhập tên tài khoản!' });
-
-    if (!users[targetUsername]) {
-        // Tạo mới tài khoản con
-        users[targetUsername] = {
-            username: targetUsername,
-            password: targetPassword || '123456',
-            role: 'sub_user',
-            balance: parseFloat(setBalance) || 0
-        };
-    } else {
-        // Cập nhật số dư / mật khẩu
-        if (setBalance !== undefined && setBalance !== '') users[targetUsername].balance = parseFloat(setBalance);
-        if (targetPassword) users[targetUsername].password = targetPassword;
-    }
-
-    res.json({ status: 'success', message: `Cập nhật tài khoản ${targetUsername} thành công!`, users });
-});
-
-// Danh sách tài khoản (cho Admin)
-app.get('/api/admin/users', (req, res) => {
-    const adminUsername = req.query.adminUsername;
     if (users[adminUsername]?.role !== 'root_admin') {
         return res.status(403).json({ status: 'error', message: 'Quyền truy cập bị từ chối!' });
     }
-    res.json({ status: 'success', users });
-});
 
-// Lấy danh sách dịch vụ (Nhóm theo phân loại TikTok)
-app.get('/api/services', async (req, res) => {
-    try {
-        const params = new URLSearchParams();
-        params.append('key', PROVIDER_API_KEY);
-        params.append('action', 'services');
-
-        const response = await axios.post(PROVIDER_API_URL, params, {
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        });
-
-        if (!Array.isArray(response.data)) return res.status(400).json({ status: 'error', message: 'Lỗi API gốc!' });
-
-        // Lọc và nhóm các dịch vụ TikTok
-        const tiktokServices = response.data
-            .filter(item => (item.name || '').toLowerCase().includes('tiktok') || (item.category || '').toLowerCase().includes('tiktok'))
-            .map(item => ({
-                service: item.service,
-                name: item.name,
-                category: item.category || 'TikTok Tổng Hợp',
-                rate: Math.round(parseFloat(item.rate) * PROFIT_MARKUP),
-                min: parseInt(item.min) || 50,
-                max: parseInt(item.max) || 5000000
-            }));
-
-        res.json({ status: 'success', data: tiktokServices });
-    } catch (error) {
-        res.status(500).json({ status: 'error', message: 'Không thể kết nối danh sách dịch vụ!' });
+    if (users[newUsername]) {
+        return res.status(400).json({ status: 'error', message: 'Tài khoản này đã tồn tại!' });
     }
+
+    users[newUsername] = {
+        username: newUsername,
+        password: newPassword || '123456',
+        role: 'sub_user',
+        balance: parseFloat(initialBalance) || 0
+    };
+
+    res.json({ status: 'success', message: `Đã tạo thành công tài khoản ${newUsername}` });
 });
 
-// Xử lý Đặt Đơn Hàng & Tự động Trừ Số Dư
+// Admin API: Cộng / Cài Số Dư Qua Tên Tài Khoản
+app.post('/api/admin/update-balance', (req, res) => {
+    const { adminUsername, targetUsername, actionType, amount } = req.body;
+
+    if (users[adminUsername]?.role !== 'root_admin') {
+        return res.status(403).json({ status: 'error', message: 'Quyền truy cập bị từ chối!' });
+    }
+
+    const targetUser = users[targetUsername];
+    if (!targetUser) {
+        return res.status(404).json({ status: 'error', message: 'Không tìm thấy tên tài khoản này!' });
+    }
+
+    const numAmount = parseFloat(amount) || 0;
+
+    if (actionType === 'add') {
+        targetUser.balance += numAmount; // Cộng thêm tiền
+    } else {
+        targetUser.balance = numAmount;  // Cài đặt trực tiếp số dư
+    }
+
+    res.json({ 
+        status: 'success', 
+        message: `Đã cập nhật số dư cho ${targetUsername}. Số dư mới: ${targetUser.balance}` 
+    });
+});
+
+// Xử lý Đặt Đơn
 app.post('/api/order', async (req, res) => {
     try {
         const { username, service, link, quantity, price } = req.body;
         const user = users[username];
 
-        if (!user) return res.status(400).json({ status: 'error', message: 'Tài khoản không hợp lệ!' });
+        if (!user) return res.status(401).json({ status: 'error', message: 'Vui lòng đăng nhập trước!' });
 
         const orderCost = parseFloat(price);
-
-        // Kiểm tra số dư tài khoản con
         if (user.role !== 'root_admin' && user.balance < orderCost) {
-            return res.status(400).json({ status: 'error', message: 'Số dư tài khoản không đủ để đặt đơn này!' });
+            return res.status(400).json({ status: 'error', message: 'Số dư tài khoản không đủ!' });
         }
 
-        // Đẩy đơn qua API c25tool
         const params = new URLSearchParams();
         params.append('key', PROVIDER_API_KEY);
         params.append('action', 'add');
@@ -194,7 +197,6 @@ app.post('/api/order', async (req, res) => {
             return res.status(400).json({ status: 'error', message: apiRes.data.error });
         }
 
-        // Trừ tiền trong ví người dùng nếu là tài khoản con
         if (user.role !== 'root_admin') {
             user.balance -= orderCost;
         }
@@ -202,13 +204,15 @@ app.post('/api/order', async (req, res) => {
         res.json({
             status: 'success',
             message: 'Tạo đơn hàng thành công!',
-            orderId: apiRes.data.order,
-            remainingBalance: user.balance
+            orderId: apiRes.data.order
         });
-
-    } catch (error) {
-        res.status(500).json({ status: 'error', message: 'Lỗi hệ thống khi tạo đơn!' });
+    } catch (e) {
+        res.status(500).json({ status: 'error', message: 'Lỗi khi tạo đơn hàng!' });
     }
 });
 
-app.listen(PORT, () => console.log(`Server chạy tại port ${PORT}`));
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+});
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
