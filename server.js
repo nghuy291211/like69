@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const axios = require('axios'); // Thêm thư viện axios để gọi API bên ngoài
+const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -9,9 +9,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'views')));
 
-// CONFIG API NHÀ CUNG CẤP GỐC
-const PROVIDER_API_URL = 'https://provider-domain.com/api/v2'; // Thay URL API của bạn
-const PROVIDER_API_KEY = 'YOUR_API_KEY_HERE';                 // Thay API Key của bạn
+// THÔNG TIN API TỪ DICHVU.C25TOOL.NET
+const PROVIDER_API_URL = process.env.PROVIDER_API_URL || 'https://dichvu.c25tool.net/api/v2';
+const PROVIDER_API_KEY = process.env.PROVIDER_API_KEY || 'c717b*********'; // Thay API Key thực tế của bạn tại đây
+
+// Tỉ giá USD -> VND để quy đổi số dư API nếu API trả về USD
+const USD_TO_VND_RATE = 25400; 
 
 function roundMoney(value) {
     const num = Number(value) || 0;
@@ -26,27 +29,50 @@ let users = [
 let orders = [];
 let balanceChanges = [];
 
-// 1. API Lấy danh sách dịch vụ TRỰC TIẾP từ Nhà Cung Cấp
+// 1. API Lấy danh sách dịch vụ trực tiếp từ dichvu.c25tool.net
 app.get('/api/services', async (req, res) => {
     try {
-        // Gọi API nhà cung cấp
         const response = await axios.post(PROVIDER_API_URL, new URLSearchParams({
             key: PROVIDER_API_KEY,
             action: 'services'
-        }));
-
-        // Trả về danh sách dịch vụ từ API gốc
-        res.json({
-            status: 'success',
-            data: response.data
+        }), {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            timeout: 10000
         });
+
+        let rawData = response.data;
+
+        if (Array.isArray(rawData)) {
+            // Chuẩn hóa dữ liệu trả về từ dichvu.c25tool.net
+            const formattedServices = rawData.map(s => {
+                let rateNumber = parseFloat(s.rate) || 0;
+                
+                // Nếu giá rate trong API gốc là USD (ví dụ 0.5/1k) thì đổi ra VND
+                if (rateNumber < 10) { 
+                    rateNumber = rateNumber * USD_TO_VND_RATE;
+                }
+
+                return {
+                    service: s.service,
+                    category: s.category || 'Dịch vụ Tổng Hợp',
+                    name: s.name || 'Dịch vụ',
+                    rate: rateNumber, // Ép về số nguyên/thực VND
+                    min: parseInt(s.min) || 100,
+                    max: parseInt(s.max) || 100000
+                };
+            });
+
+            return res.json({ status: 'success', data: formattedServices });
+        } else {
+            return res.status(400).json({ status: 'error', message: 'API Key không chính xác hoặc lỗi từ c25tool' });
+        }
     } catch (error) {
-        console.error('Lỗi kết nối API dịch vụ:', error.message);
-        res.status(500).json({ status: 'error', message: 'Không thể kết nối đến nhà cung cấp dịch vụ!' });
+        console.error('Lỗi kết nối API dichvu.c25tool.net:', error.message);
+        return res.status(500).json({ status: 'error', message: 'Không thể kết nối API nhà cung cấp' });
     }
 });
 
-// 2. API Lấy Số Dư
+// 2. API Lấy Số Dư thực tế
 app.get('/api/user/balance', async (req, res) => {
     const username = req.query.username;
     const user = users.find(u => u.username.toLowerCase() === (username || '').toLowerCase());
@@ -55,18 +81,30 @@ app.get('/api/user/balance', async (req, res) => {
         return res.status(404).json({ status: 'error', message: 'Không tìm thấy người dùng' });
     }
 
-    let realApiBalance = 0;
+    let realApiBalanceVND = 0;
 
-    // Nếu là Admin, gọi số dư thực tế từ tài khoản Nhà Cung Cấp
     if (user.role === 'root_admin') {
         try {
             const apiRes = await axios.post(PROVIDER_API_URL, new URLSearchParams({
                 key: PROVIDER_API_KEY,
                 action: 'balance'
-            }));
-            realApiBalance = apiRes.data.balance || 0;
+            }), {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                timeout: 5000
+            });
+
+            if (apiRes.data && apiRes.data.balance) {
+                const balanceVal = parseFloat(apiRes.data.balance) || 0;
+                
+                // Nếu đơn vị là USD, quy đổi ra VND để hiển thị chuẩn trên web
+                if (apiRes.data.currency === 'USD') {
+                    realApiBalanceVND = balanceVal * USD_TO_VND_RATE;
+                } else {
+                    realApiBalanceVND = balanceVal;
+                }
+            }
         } catch (err) {
-            console.error('Lỗi lấy số dư API gốc:', err.message);
+            console.error('Lỗi lấy số dư c25tool:', err.message);
         }
     }
 
@@ -74,7 +112,7 @@ app.get('/api/user/balance', async (req, res) => {
         status: 'success',
         role: user.role,
         usableBalance: roundMoney(user.balance),
-        realApiBalance: roundMoney(realApiBalance)
+        realApiBalance: roundMoney(realApiBalanceVND)
     });
 });
 
@@ -91,7 +129,7 @@ app.post('/api/login', (req, res) => {
     });
 });
 
-// 4. API Bắn đơn TRỰC TIẾP lên Nhà Cung Cấp
+// 4. API Tạo đơn hàng
 app.post('/api/order', async (req, res) => {
     const { username, service, link, quantity, price } = req.body;
     const user = users.find(u => u.username.toLowerCase() === (username || '').toLowerCase());
@@ -104,14 +142,16 @@ app.post('/api/order', async (req, res) => {
     }
 
     try {
-        // Gửi order sang API đối tác
         const apiOrder = await axios.post(PROVIDER_API_URL, new URLSearchParams({
             key: PROVIDER_API_KEY,
             action: 'add',
             service: service,
             link: link,
             quantity: quantity
-        }));
+        }), {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            timeout: 10000
+        });
 
         if (apiOrder.data && apiOrder.data.order) {
             user.balance = roundMoney(user.balance - totalCost);
@@ -135,12 +175,12 @@ app.post('/api/order', async (req, res) => {
                 time: new Date().toLocaleString('vi-VN')
             });
 
-            res.json({ status: 'success', orderId: orderId, remainingBalance: user.balance });
+            return res.json({ status: 'success', orderId: orderId, remainingBalance: user.balance });
         } else {
-            res.status(400).json({ status: 'error', message: apiOrder.data.error || 'Lỗi từ nhà cung cấp API' });
+            return res.status(400).json({ status: 'error', message: apiOrder.data?.error || 'Lỗi từ nhà cung cấp API' });
         }
     } catch (err) {
-        res.status(500).json({ status: 'error', message: 'Không thể kết nối đến máy chủ đối tác' });
+        return res.status(500).json({ status: 'error', message: 'Không thể gửi đơn sang API c25tool' });
     }
 });
 
