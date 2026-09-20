@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const axios = require('axios'); // Thêm thư viện axios để gọi API bên ngoài
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -8,133 +9,153 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'views')));
 
-// Helper chuẩn hóa số lẻ tối đa 3 chữ số
+// CONFIG API NHÀ CUNG CẤP GỐC
+const PROVIDER_API_URL = 'https://provider-domain.com/api/v2'; // Thay URL API của bạn
+const PROVIDER_API_KEY = 'YOUR_API_KEY_HERE';                 // Thay API Key của bạn
+
 function roundMoney(value) {
     const num = Number(value) || 0;
     return Math.round(num * 1000) / 1000;
 }
 
-// Cơ sở dữ liệu mô phỏng trong bộ nhớ (In-memory)
 let users = [
-    { username: 'admin', password: '123', role: 'root_admin', balance: 1000000 },
-    { username: 'user1', password: '123', role: 'user', balance: 250000.5 }
-];
-
-let services = [
-    { service: 101, category: 'TikTok View', name: 'Tăng View TikTok Siêu Tốc', rate: 1.25, min: 1000, max: 1000000 },
-    { service: 102, category: 'TikTok View', name: 'Tăng View TikTok Giá Rẻ', rate: 0.85, min: 1000, max: 500000 },
-    { service: 201, category: 'TikTok Like', name: 'Tăng Tim TikTok Viễn Đông', rate: 12.5, min: 100, max: 50000 },
-    { service: 301, category: 'TikTok Follow', name: 'Tăng Follow TikTok Việt Nam', rate: 45.0, min: 100, max: 20000 }
+    { username: 'nghuy291211', password: '123', role: 'root_admin', balance: 500000 },
+    { username: 'admin', password: '123', role: 'root_admin', balance: 1000000 }
 ];
 
 let orders = [];
 let balanceChanges = [];
 
-// API 1: Đăng nhập
-app.post('/api/login', (req, res) => {
-    const { username, password } = req.body;
-    const user = users.find(u => u.username === username && u.password === password);
-    if (!user) {
-        return res.status(400).json({ status: 'error', message: 'Tài khoản hoặc mật khẩu không chính xác' });
+// 1. API Lấy danh sách dịch vụ TRỰC TIẾP từ Nhà Cung Cấp
+app.get('/api/services', async (req, res) => {
+    try {
+        // Gọi API nhà cung cấp
+        const response = await axios.post(PROVIDER_API_URL, new URLSearchParams({
+            key: PROVIDER_API_KEY,
+            action: 'services'
+        }));
+
+        // Trả về danh sách dịch vụ từ API gốc
+        res.json({
+            status: 'success',
+            data: response.data
+        });
+    } catch (error) {
+        console.error('Lỗi kết nối API dịch vụ:', error.message);
+        res.status(500).json({ status: 'error', message: 'Không thể kết nối đến nhà cung cấp dịch vụ!' });
     }
-    res.json({
-        status: 'success',
-        user: { username: user.username, role: user.role }
-    });
 });
 
-// API 2: Lấy số dư người dùng
-app.get('/api/user/balance', (req, res) => {
-    const { username } = req.query;
-    const user = users.find(u => u.username === username);
+// 2. API Lấy Số Dư
+app.get('/api/user/balance', async (req, res) => {
+    const username = req.query.username;
+    const user = users.find(u => u.username.toLowerCase() === (username || '').toLowerCase());
+
     if (!user) {
         return res.status(404).json({ status: 'error', message: 'Không tìm thấy người dùng' });
+    }
+
+    let realApiBalance = 0;
+
+    // Nếu là Admin, gọi số dư thực tế từ tài khoản Nhà Cung Cấp
+    if (user.role === 'root_admin') {
+        try {
+            const apiRes = await axios.post(PROVIDER_API_URL, new URLSearchParams({
+                key: PROVIDER_API_KEY,
+                action: 'balance'
+            }));
+            realApiBalance = apiRes.data.balance || 0;
+        } catch (err) {
+            console.error('Lỗi lấy số dư API gốc:', err.message);
+        }
     }
 
     res.json({
         status: 'success',
         role: user.role,
         usableBalance: roundMoney(user.balance),
-        realApiBalance: user.role === 'root_admin' ? roundMoney(user.balance * 1.5) : 0
+        realApiBalance: roundMoney(realApiBalance)
     });
 });
 
-// API 3: Lấy danh sách dịch vụ
-app.get('/api/services', (req, res) => {
-    const formattedServices = services.map(s => ({
-        ...s,
-        rate: roundMoney(s.rate)
-    }));
-    res.json({ status: 'success', data: formattedServices });
-});
-
-// API 4: Tạo đơn hàng
-app.post('/api/order', (req, res) => {
-    const { username, service, link, quantity, price } = req.body;
-    const user = users.find(u => u.username === username);
-
+// 3. API Đăng nhập
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+    const user = users.find(u => u.username.toLowerCase() === (username || '').toLowerCase() && u.password === password);
     if (!user) {
-        return res.status(400).json({ status: 'error', message: 'Người dùng không hợp lệ' });
+        return res.status(400).json({ status: 'error', message: 'Tài khoản hoặc mật khẩu không đúng!' });
     }
-
-    const calculatedCost = roundMoney(price);
-
-    if (user.balance < calculatedCost) {
-        return res.status(400).json({ status: 'error', message: 'Số dư không đủ để thực hiện giao dịch' });
-    }
-
-    // Trừ tiền & Lưu biến động số dư
-    user.balance = roundMoney(user.balance - calculatedCost);
-    const orderId = Math.floor(100000 + Math.random() * 900000);
-
-    const sItem = services.find(s => s.service == service);
-    const serviceName = sItem ? sItem.name : `Dịch vụ #${service}`;
-
-    orders.unshift({
-        id: orderId,
-        username: user.username,
-        serviceName: serviceName,
-        quantity: Number(quantity),
-        price: calculatedCost,
-        link: link,
-        status: 'Completed',
-        createdAt: new Date().toLocaleString('vi-VN')
-    });
-
-    balanceChanges.unshift({
-        username: user.username,
-        amount: roundMoney(-calculatedCost),
-        lastBalance: user.balance,
-        description: `Thanh toán đơn hàng #${orderId}`,
-        time: new Date().toLocaleString('vi-VN')
-    });
-
     res.json({
         status: 'success',
-        orderId: orderId,
-        remainingBalance: user.balance
+        user: { username: user.username, role: user.role, balance: roundMoney(user.balance) }
     });
 });
 
-// API 5: Lấy lịch sử đơn hàng
+// 4. API Bắn đơn TRỰC TIẾP lên Nhà Cung Cấp
+app.post('/api/order', async (req, res) => {
+    const { username, service, link, quantity, price } = req.body;
+    const user = users.find(u => u.username.toLowerCase() === (username || '').toLowerCase());
+
+    if (!user) return res.status(400).json({ status: 'error', message: 'Người dùng không hợp lệ' });
+
+    const totalCost = roundMoney(price);
+    if (user.balance < totalCost) {
+        return res.status(400).json({ status: 'error', message: 'Số dư không đủ thanh toán' });
+    }
+
+    try {
+        // Gửi order sang API đối tác
+        const apiOrder = await axios.post(PROVIDER_API_URL, new URLSearchParams({
+            key: PROVIDER_API_KEY,
+            action: 'add',
+            service: service,
+            link: link,
+            quantity: quantity
+        }));
+
+        if (apiOrder.data && apiOrder.data.order) {
+            user.balance = roundMoney(user.balance - totalCost);
+            const orderId = apiOrder.data.order;
+
+            orders.unshift({
+                id: orderId,
+                username: user.username,
+                service: service,
+                quantity: quantity,
+                price: totalCost,
+                link: link,
+                createdAt: new Date().toLocaleString('vi-VN')
+            });
+
+            balanceChanges.unshift({
+                username: user.username,
+                amount: roundMoney(-totalCost),
+                lastBalance: user.balance,
+                description: `Thanh toán đơn hàng API #${orderId}`,
+                time: new Date().toLocaleString('vi-VN')
+            });
+
+            res.json({ status: 'success', orderId: orderId, remainingBalance: user.balance });
+        } else {
+            res.status(400).json({ status: 'error', message: apiOrder.data.error || 'Lỗi từ nhà cung cấp API' });
+        }
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: 'Không thể kết nối đến máy chủ đối tác' });
+    }
+});
+
 app.get('/api/user/orders', (req, res) => {
-    const { username } = req.query;
-    const userOrders = orders.filter(o => o.username === username);
-    res.json({ status: 'success', data: userOrders });
+    const username = req.query.username;
+    res.json({ status: 'success', data: orders.filter(o => o.username.toLowerCase() === (username || '').toLowerCase()) });
 });
 
-// API 6: Lấy lịch sử biến động số dư
 app.get('/api/user/balance-changes', (req, res) => {
-    const { username } = req.query;
-    const userChanges = balanceChanges.filter(b => b.username === username);
-    res.json({ status: 'success', data: userChanges });
+    const username = req.query.username;
+    res.json({ status: 'success', data: balanceChanges.filter(b => b.username.toLowerCase() === (username || '').toLowerCase()) });
 });
 
-// Điều hướng trang chính
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
 
-app.listen(PORT, () => {
-    console.log(`Server chạy tại: http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
