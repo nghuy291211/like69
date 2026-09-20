@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'views')));
 
-// Cơ sở dữ liệu tài khoản
+// Cơ sở dữ liệu tài khoản trong bộ nhớ
 const users = {
     "nghuy291211": {
         username: "nghuy291211",
@@ -23,6 +23,23 @@ const users = {
         balance: 0
     }
 };
+
+// Hàm hỗ trợ lấy số dư API thực từ nhà cung cấp
+async function getRealApiBalance() {
+    if (!PROVIDER_API_KEY) return 0;
+    try {
+        const params = new URLSearchParams();
+        params.append('key', PROVIDER_API_KEY);
+        params.append('action', 'balance');
+
+        const apiRes = await axios.post(PROVIDER_API_URL, params, {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        });
+        return parseFloat(apiRes.data.balance || 0);
+    } catch (e) {
+        return 0;
+    }
+}
 
 // Đăng nhập
 app.post('/api/login', (req, res) => {
@@ -87,30 +104,18 @@ app.get('/api/user/balance', async (req, res) => {
     if (!user) return res.status(404).json({ status: 'error', message: 'Tài khoản không tồn tại!' });
 
     if (user.role === 'root_admin') {
-        try {
-            const params = new URLSearchParams();
-            params.append('key', PROVIDER_API_KEY);
-            params.append('action', 'balance');
+        const realApiBalance = await getRealApiBalance();
+        let totalSubBalance = 0;
+        Object.values(users).forEach(u => {
+            if (u.role !== 'root_admin') totalSubBalance += u.balance;
+        });
 
-            const apiRes = await axios.post(PROVIDER_API_URL, params, {
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-            });
-
-            const realApiBalance = parseFloat(apiRes.data.balance || 0);
-            let totalSubBalance = 0;
-            Object.values(users).forEach(u => {
-                if (u.role !== 'root_admin') totalSubBalance += u.balance;
-            });
-
-            res.json({
-                status: 'success',
-                role: 'root_admin',
-                realApiBalance,
-                usableBalance: realApiBalance - totalSubBalance
-            });
-        } catch (e) {
-            res.status(500).json({ status: 'error', message: 'Lỗi kết nối lấy số dư API!' });
-        }
+        res.json({
+            status: 'success',
+            role: 'root_admin',
+            realApiBalance,
+            usableBalance: realApiBalance - totalSubBalance
+        });
     } else {
         res.json({
             status: 'success',
@@ -120,8 +125,22 @@ app.get('/api/user/balance', async (req, res) => {
     }
 });
 
-// Admin API: Tạo Tài Khoản Con
-app.post('/api/admin/create-user', (req, res) => {
+// Admin API: Lấy danh sách tài khoản
+app.get('/api/admin/users', (req, res) => {
+    const adminUsername = req.query.adminUsername;
+    if (users[adminUsername]?.role !== 'root_admin') {
+        return res.status(403).json({ status: 'error', message: 'Quyền truy cập bị từ chối!' });
+    }
+
+    const list = Object.values(users)
+        .filter(u => u.role !== 'root_admin')
+        .map(u => ({ username: u.username, balance: u.balance }));
+
+    res.json({ status: 'success', data: list });
+});
+
+// Admin API: Tạo Tài Khoản Con (Kiểm tra giới hạn số dư API)
+app.post('/api/admin/create-user', async (req, res) => {
     const { adminUsername, newUsername, newPassword, initialBalance } = req.body;
 
     if (users[adminUsername]?.role !== 'root_admin') {
@@ -132,18 +151,33 @@ app.post('/api/admin/create-user', (req, res) => {
         return res.status(400).json({ status: 'error', message: 'Tài khoản này đã tồn tại!' });
     }
 
+    const setBalance = parseFloat(initialBalance) || 0;
+    const realApiBalance = await getRealApiBalance();
+
+    let currentSubTotal = 0;
+    Object.values(users).forEach(u => {
+        if (u.role !== 'root_admin') currentSubTotal += u.balance;
+    });
+
+    if (currentSubTotal + setBalance > realApiBalance) {
+        return res.status(400).json({ 
+            status: 'error', 
+            message: `Không thể cài số dư! Tổng số dư các acc con (${currentSubTotal + setBalance} đ) vượt quá số dư API gốc (${realApiBalance} đ).` 
+        });
+    }
+
     users[newUsername] = {
         username: newUsername,
         password: newPassword || '123456',
         role: 'sub_user',
-        balance: parseFloat(initialBalance) || 0
+        balance: setBalance
     };
 
     res.json({ status: 'success', message: `Đã tạo thành công tài khoản ${newUsername}` });
 });
 
-// Admin API: Cộng / Cài Số Dư Qua Tên Tài Khoản
-app.post('/api/admin/update-balance', (req, res) => {
+// Admin API: Cập nhật / Cộng số dư (Kiểm tra giới hạn số dư API)
+app.post('/api/admin/update-balance', async (req, res) => {
     const { adminUsername, targetUsername, actionType, amount } = req.body;
 
     if (users[adminUsername]?.role !== 'root_admin') {
@@ -156,16 +190,29 @@ app.post('/api/admin/update-balance', (req, res) => {
     }
 
     const numAmount = parseFloat(amount) || 0;
+    const realApiBalance = await getRealApiBalance();
 
-    if (actionType === 'add') {
-        targetUser.balance += numAmount; // Cộng thêm tiền
-    } else {
-        targetUser.balance = numAmount;  // Cài đặt trực tiếp số dư
+    let currentSubTotal = 0;
+    Object.values(users).forEach(u => {
+        if (u.role !== 'root_admin' && u.username !== targetUsername) {
+            currentSubTotal += u.balance;
+        }
+    });
+
+    const newTargetBalance = (actionType === 'add') ? (targetUser.balance + numAmount) : numAmount;
+
+    if (currentSubTotal + newTargetBalance > realApiBalance) {
+        return res.status(400).json({ 
+            status: 'error', 
+            message: `Không thể cài đặt! Tổng số dư phụ (${currentSubTotal + newTargetBalance} đ) vượt quá số dư API gốc (${realApiBalance} đ).` 
+        });
     }
+
+    targetUser.balance = newTargetBalance;
 
     res.json({ 
         status: 'success', 
-        message: `Đã cập nhật số dư cho ${targetUsername}. Số dư mới: ${targetUser.balance}` 
+        message: `Đã cập nhật số dư cho ${targetUsername}. Số dư mới: ${targetUser.balance} đ` 
     });
 });
 
