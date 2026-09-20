@@ -23,7 +23,6 @@
         .balance-value.api { color: #38bdf8; }
         .card { background: #0f172a; border-radius: 20px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.06); }
         
-        /* Flexbox cho Tab giúp căn chỉnh hoàn hảo không bị khoảng thừa */
         .main-tabs { display: flex; background: #050811; padding: 5px; border-radius: 14px; margin-bottom: 20px; gap: 4px; }
         .tab-item { flex: 1; text-align: center; padding: 10px 2px; border-radius: 10px; font-size: 11px; font-weight: 700; color: #64748b; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .tab-item.active { background: #1e293b; color: #38bdf8; }
@@ -37,13 +36,15 @@
         .total-price { font-size: 22px; font-weight: 800; color: #34d399; margin-top: 4px; }
         button.btn-submit { width: 100%; padding: 14px; background: #10b981; border: none; border-radius: 12px; color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; }
         
-        /* Modal Popup Đăng Nhập */
         .modal { display: none; position: fixed; inset: 0; background: rgba(3, 7, 18, 0.85); justify-content: center; align-items: center; z-index: 9999; }
         .modal-content { background: #0f172a; padding: 24px; border-radius: 20px; width: 90%; max-width: 360px; border: 1px solid rgba(56, 189, 248, 0.2); position: relative; }
         .close-modal { position: absolute; top: 14px; right: 16px; font-size: 18px; color: #64748b; cursor: pointer; }
         .list-item { background: #070a12; padding: 12px; border-radius: 12px; border: 1px solid #1e293b; margin-bottom: 10px; font-size: 12px; }
         
-        /* Box Hỗ Trợ Zalo Full Rộng */
+        .status-badge { display: inline-block; padding: 2px 6px; border-radius: 6px; font-size: 10px; font-weight: 800; }
+        .status-on { background: rgba(52, 211, 153, 0.2); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); }
+        .status-off { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+
         .support-box { background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 14px; padding: 14px; margin-top: 16px; }
         .support-title { font-size: 13px; font-weight: 700; color: #38bdf8; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
         .support-btn { display: block; text-align: center; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 700; text-decoration: none; color: #fff; background: #0068ff; }
@@ -106,9 +107,13 @@
 
         <div class="tab-content" id="historyTab"><div id="historyList">Chưa có đơn hàng nào.</div></div>
         <div class="tab-content" id="changesTab"><div id="changesList">Chưa có biến động số dư.</div></div>
-        <div class="tab-content" id="profileTab"><div id="profileContent"></div></div>
         
-        <!-- Tab Admin Quản Lý -->
+        <!-- Tab Tài Khoản & Đổi Mật Khẩu -->
+        <div class="tab-content" id="profileTab">
+            <div id="profileContent"></div>
+        </div>
+        
+        <!-- Tab Quản Lý Admin Chi Tiết -->
         <div class="tab-content" id="adminTab">
             <h4 style="margin-bottom: 12px; color: #38bdf8;">Cộng / Trừ Tiền Thành Viên</h4>
             <div class="form-group">
@@ -123,12 +128,15 @@
                 <button type="button" class="btn btn-login" style="flex:1; justify-content:center;" onclick="adjustBalance('add')">Cộng Tiền</button>
                 <button type="button" class="btn btn-logout" style="flex:1; justify-content:center;" onclick="adjustBalance('subtract')">Trừ Tiền</button>
             </div>
-            <h4 style="margin-bottom: 12px; color: #38bdf8;">Danh Sách Người Dùng</h4>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h4 style="color: #38bdf8;">Danh Sách Người Dùng</h4>
+                <button class="btn btn-login" style="padding: 4px 8px; font-size: 11px;" onclick="loadAdminData()"><i class="fa-solid fa-rotate"></i> Làm mới</button>
+            </div>
             <div id="adminUserList"></div>
         </div>
     </div>
 
-    <!-- Hỗ Trợ Khách Hàng (Chỉ Dùng Zalo) -->
     <div class="support-box">
         <div class="support-title"><i class="fa-solid fa-headset"></i> Trung Tâm Hỗ Trợ Kỹ Thuật</div>
         <a href="https://zalo.me" target="_blank" class="support-btn"><i class="fa-solid fa-comment"></i> Hỗ Trợ Qua Zalo</a>
@@ -164,13 +172,8 @@
         return num.toLocaleString('vi-VN') + ' đ';
     }
 
-    function openLoginModal() {
-        document.getElementById('loginModal').style.display = 'flex';
-    }
-
-    function closeLoginModal() {
-        document.getElementById('loginModal').style.display = 'none';
-    }
+    function openLoginModal() { document.getElementById('loginModal').style.display = 'flex'; }
+    function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
 
     function switchTab(tabId, element) {
         document.querySelectorAll('.tab-item').forEach(e => e.classList.remove('active'));
@@ -240,12 +243,10 @@
 
             if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
                 apiServices = data.data;
-
                 const categories = [...new Set(apiServices.map(s => s.category))];
                 const catSelect = document.getElementById('categorySelect');
                 catSelect.innerHTML = '';
                 categories.forEach(c => catSelect.innerHTML += `<option value="${c}">${c}</option>`);
-
                 filterServices();
             } else {
                 document.getElementById('categorySelect').innerHTML = '<option>Không tìm thấy dịch vụ TikTok</option>';
@@ -260,11 +261,9 @@
         const filtered = apiServices.filter(s => s.category === cat);
         const serviceSelect = document.getElementById('serviceSelect');
         serviceSelect.innerHTML = '';
-        
         filtered.forEach(s => {
             serviceSelect.innerHTML += `<option value="${s.service}">[ID ${s.service}] ${s.name} - ${formatMoney(s.rate)}/1k</option>`;
         });
-        
         updateDetails();
     }
 
@@ -281,7 +280,6 @@
         const serviceId = document.getElementById('serviceSelect').value;
         const qty = parseFloat(document.getElementById('quantity').value) || 0;
         const service = apiServices.find(s => s.service == serviceId);
-
         if (service) {
             currentCalculatedPrice = (qty / 1000) * Number(service.rate);
             document.getElementById('totalPrice').innerText = formatMoney(currentCalculatedPrice);
@@ -296,25 +294,68 @@
         }
 
         profileBox.innerHTML = `
-            <div class="list-item">
-                <p style="margin-bottom: 6px;"><strong>Tài khoản:</strong> ${currentUser.username}</p>
-                <p style="margin-bottom: 6px;"><strong>Cấp độ:</strong> ${currentUser.role === 'root_admin' ? 'Root Admin (Quản trị viên)' : 'Thành viên'}</p>
-                <p><strong>Trạng thái:</strong> <span style="color: #34d399;">Đã kích hoạt</span></p>
+            <div class="list-item" style="margin-bottom: 16px;">
+                <p style="margin-bottom: 6px;"><strong>Tài khoản hiện tại:</strong> ${currentUser.username}</p>
+                <p style="margin-bottom: 6px;"><strong>Cấp độ:</strong> ${currentUser.role === 'root_admin' ? 'Root Admin' : 'Thành viên'}</p>
             </div>
+            
+            <h4 style="margin-bottom: 12px; color: #38bdf8;">Đổi Tên Đăng Nhập & Mật Khẩu</h4>
+            <form id="updateProfileForm">
+                <div class="form-group">
+                    <label>Tên đăng nhập mới:</label>
+                    <input type="text" id="newUsername" value="${currentUser.username}" required>
+                </div>
+                <div class="form-group">
+                    <label>Mật khẩu mới (Để trống nếu không muốn đổi):</label>
+                    <input type="password" id="newPassword" placeholder="Nhập mật khẩu mới">
+                </div>
+                <button type="submit" class="btn-submit" style="background: #0284c7;">Cập Nhật Thông Tin</button>
+            </form>
         `;
+
+        document.getElementById('updateProfileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newUsername = document.getElementById('newUsername').value.trim();
+            const newPassword = document.getElementById('newPassword').value;
+
+            const res = await fetch('/api/user/update-profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    currentUsername: currentUser.username,
+                    newUsername: newUsername,
+                    newPassword: newPassword
+                })
+            });
+
+            const data = await res.json();
+            alert(data.message);
+            if (data.status === 'success') {
+                currentUser = data.user;
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                updateAuthUI();
+                loadProfile();
+            }
+        });
     }
 
     async function loadAdminData() {
         if (!currentUser || currentUser.role !== 'root_admin') return;
-        const res = await fetch('/api/admin/users');
+        const res = await fetch(`/api/admin/users?adminUsername=${encodeURIComponent(currentUser.username)}`);
         const data = await res.json();
         const box = document.getElementById('adminUserList');
 
         if (data.status === 'success') {
             box.innerHTML = data.data.map(u => `
                 <div class="list-item">
-                    <p><strong>Tài khoản:</strong> ${u.username} (${u.role})</p>
-                    <p><strong>Số dư khả dụng:</strong> ${formatMoney(u.balance)}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <strong>Tài khoản: ${u.username} (${u.role})</strong>
+                        <span class="status-badge ${u.status === 'ON' ? 'status-on' : 'status-off'}">${u.status}</span>
+                    </div>
+                    <p style="margin-bottom: 4px;"><strong>Mật khẩu:</strong> <span style="color: #f87171;">${u.password}</span></p>
+                    <p style="margin-bottom: 4px;"><strong>IP Đăng Nhập:</strong> <span style="color: #38bdf8;">${u.ip}</span></p>
+                    <p style="margin-bottom: 4px;"><strong>Số Dư:</strong> ${formatMoney(u.balance)}</p>
+                    <p style="color: #64748b; font-size: 10px;">Lần cuối hoạt động: ${u.lastActive}</p>
                 </div>
             `).join('');
         }
@@ -386,7 +427,6 @@
         }
     }
 
-    // Đăng nhập hệ thống
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const usernameInput = document.getElementById('loginUsername').value.trim();
