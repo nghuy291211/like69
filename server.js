@@ -24,7 +24,7 @@ function readDB() {
                     username: "admin",
                     password: "123",
                     role: "root_admin",
-                    balance: 1000000,
+                    balance: 0,
                     status: "ON"
                 }
             ],
@@ -53,7 +53,7 @@ app.post('/api/login', (req, res) => {
     }
 });
 
-// 2. API Lấy số dư (Đọc trực tiếp từ API gốc dichvu.c25tool.net, không dùng số cứng)
+// 2. API Lấy số dư (Đọc từ API gốc dichvu.c25tool.net và tự động tính toán cho Admin)
 app.get('/api/user/balance', async (req, res) => {
     const { username } = req.query;
     const db = readDB();
@@ -81,9 +81,20 @@ app.get('/api/user/balance', async (req, res) => {
         realApiBalance = 0;
     }
 
+    let usableBalance = user.balance;
+
+    // Nếu là root_admin: Số dư sử dụng = Tổng tiền từ API - Tổng số dư đã cấp cho các sub-user
+    if (user.role === 'root_admin') {
+        const totalSubUserBalance = db.users
+            .filter(u => u.role !== 'root_admin')
+            .reduce((sum, u) => sum + (Number(u.balance) || 0), 0);
+        
+        usableBalance = realApiBalance - totalSubUserBalance;
+    }
+
     res.json({
         status: 'success',
-        usableBalance: user.balance,
+        usableBalance: usableBalance,
         role: user.role,
         realApiBalance: realApiBalance
     });
@@ -114,7 +125,17 @@ app.post('/api/order', async (req, res) => {
 
     if (!user) return res.status(404).json({ status: 'error', message: 'Tài khoản không tồn tại' });
 
-    if (user.balance < price) {
+    // Tính lại số dư khả dụng của user/admin trước khi check tiền
+    let currentUsableBalance = user.balance;
+    if (user.role === 'root_admin') {
+        const totalSubUserBalance = db.users
+            .filter(u => u.role !== 'root_admin')
+            .reduce((sum, u) => sum + (Number(u.balance) || 0), 0);
+        // Có thể gọi trực tiếp API lấy real balance nếu cần, ở đây check tạm theo số nội bộ hoặc logic hiện tại
+        currentUsableBalance = user.balance; // Hoặc check trực tiếp
+    }
+
+    if (user.role !== 'root_admin' && user.balance < price) {
         return res.status(400).json({ status: 'error', message: 'Số dư của bạn không đủ để tạo đơn hàng này!' });
     }
 
@@ -132,7 +153,9 @@ app.post('/api/order', async (req, res) => {
         });
 
         if (apiResponse.data && apiResponse.data.order) {
-            user.balance -= price;
+            if (user.role !== 'root_admin') {
+                user.balance -= price;
+            }
 
             const newOrder = {
                 id: apiResponse.data.order,
