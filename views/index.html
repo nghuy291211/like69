@@ -22,9 +22,12 @@
         .balance-value { font-size: 18px; font-weight: 800; margin-top: 4px; color: #34d399; }
         .balance-value.api { color: #38bdf8; }
         .card { background: #0f172a; border-radius: 20px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.06); }
-        .main-tabs { display: grid; grid-template-columns: repeat(5, 1fr); background: #050811; padding: 5px; border-radius: 14px; margin-bottom: 20px; gap: 2px; }
-        .tab-item { text-align: center; padding: 10px 2px; border-radius: 10px; font-size: 10px; font-weight: 700; color: #64748b; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        
+        /* Flexbox cho Tab giúp căn chỉnh hoàn hảo không bị khoảng thừa */
+        .main-tabs { display: flex; background: #050811; padding: 5px; border-radius: 14px; margin-bottom: 20px; gap: 4px; }
+        .tab-item { flex: 1; text-align: center; padding: 10px 2px; border-radius: 10px; font-size: 11px; font-weight: 700; color: #64748b; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .tab-item.active { background: #1e293b; color: #38bdf8; }
+        
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .form-group { margin-bottom: 14px; }
@@ -33,17 +36,17 @@
         .total-box { background: rgba(7, 10, 18, 0.7); border: 1px dashed rgba(52, 211, 153, 0.3); padding: 14px; border-radius: 14px; text-align: center; margin: 18px 0; }
         .total-price { font-size: 22px; font-weight: 800; color: #34d399; margin-top: 4px; }
         button.btn-submit { width: 100%; padding: 14px; background: #10b981; border: none; border-radius: 12px; color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(3, 7, 18, 0.85); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: #0f172a; padding: 24px; border-radius: 20px; width: 90%; max-width: 360px; border: 1px solid rgba(56, 189, 248, 0.2); }
+        
+        /* Modal Popup Đăng Nhập */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(3, 7, 18, 0.85); justify-content: center; align-items: center; z-index: 9999; }
+        .modal-content { background: #0f172a; padding: 24px; border-radius: 20px; width: 90%; max-width: 360px; border: 1px solid rgba(56, 189, 248, 0.2); position: relative; }
+        .close-modal { position: absolute; top: 14px; right: 16px; font-size: 18px; color: #64748b; cursor: pointer; }
         .list-item { background: #070a12; padding: 12px; border-radius: 12px; border: 1px solid #1e293b; margin-bottom: 10px; font-size: 12px; }
         
-        /* Box Hỗ Trợ */
+        /* Box Hỗ Trợ Zalo Full Rộng */
         .support-box { background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 14px; padding: 14px; margin-top: 16px; }
         .support-title { font-size: 13px; font-weight: 700; color: #38bdf8; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-        .support-links { display: flex; gap: 10px; }
-        .support-btn { flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; text-decoration: none; color: #fff; background: #1e293b; }
-        .support-btn.zalo { background: #0068ff; }
-        .support-btn.telegram { background: #0088cc; }
+        .support-btn { display: block; text-align: center; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 700; text-decoration: none; color: #fff; background: #0068ff; }
     </style>
 </head>
 <body>
@@ -105,7 +108,7 @@
         <div class="tab-content" id="changesTab"><div id="changesList">Chưa có biến động số dư.</div></div>
         <div class="tab-content" id="profileTab"><div id="profileContent"></div></div>
         
-        <!-- Tab Admin Quản Lý Tài Khoản -->
+        <!-- Tab Admin Quản Lý -->
         <div class="tab-content" id="adminTab">
             <h4 style="margin-bottom: 12px; color: #38bdf8;">Cộng / Trừ Tiền Thành Viên</h4>
             <div class="form-group">
@@ -117,35 +120,34 @@
                 <input type="number" id="adminAmount" placeholder="Ví dụ: 100000">
             </div>
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button class="btn btn-login" style="flex:1; justify-content:center;" onclick="adjustBalance('add')">Cộng Tiền</button>
-                <button class="btn btn-logout" style="flex:1; justify-content:center;" onclick="adjustBalance('subtract')">Trừ Tiền</button>
+                <button type="button" class="btn btn-login" style="flex:1; justify-content:center;" onclick="adjustBalance('add')">Cộng Tiền</button>
+                <button type="button" class="btn btn-logout" style="flex:1; justify-content:center;" onclick="adjustBalance('subtract')">Trừ Tiền</button>
             </div>
             <h4 style="margin-bottom: 12px; color: #38bdf8;">Danh Sách Người Dùng</h4>
             <div id="adminUserList"></div>
         </div>
     </div>
 
-    <!-- KHU VỰC HỖ TRỢ KHÁCH HÀNG -->
+    <!-- Hỗ Trợ Khách Hàng (Chỉ Dùng Zalo) -->
     <div class="support-box">
         <div class="support-title"><i class="fa-solid fa-headset"></i> Trung Tâm Hỗ Trợ Kỹ Thuật</div>
-        <div class="support-links">
-            <a href="https://zalo.me" target="_blank" class="support-btn zalo"><i class="fa-solid fa-comment"></i> Zalo Support</a>
-            <a href="https://t.me" target="_blank" class="support-btn telegram"><i class="fa-paper-plane"></i> Telegram</a>
-        </div>
+        <a href="https://zalo.me" target="_blank" class="support-btn"><i class="fa-solid fa-comment"></i> Hỗ Trợ Qua Zalo</a>
     </div>
 </div>
 
+<!-- Modal Đăng Nhập -->
 <div class="modal" id="loginModal">
     <div class="modal-content">
-        <h3 style="margin-bottom: 12px;">Đăng Nhập</h3>
+        <span class="close-modal" onclick="closeLoginModal()">&times;</span>
+        <h3 style="margin-bottom: 16px; color: #38bdf8;">Đăng Nhập Hệ Thống</h3>
         <form id="loginForm">
             <div class="form-group">
                 <label>Tài khoản</label>
-                <input type="text" id="loginUsername" required>
+                <input type="text" id="loginUsername" placeholder="Nhập username" required>
             </div>
             <div class="form-group">
                 <label>Mật khẩu</label>
-                <input type="password" id="loginPassword" required>
+                <input type="password" id="loginPassword" placeholder="Nhập mật khẩu" required>
             </div>
             <button type="submit" class="btn-submit">Đăng Nhập</button>
         </form>
@@ -160,6 +162,14 @@
     function formatMoney(amount) {
         let num = Number(amount) || 0;
         return num.toLocaleString('vi-VN') + ' đ';
+    }
+
+    function openLoginModal() {
+        document.getElementById('loginModal').style.display = 'flex';
+    }
+
+    function closeLoginModal() {
+        document.getElementById('loginModal').style.display = 'none';
     }
 
     function switchTab(tabId, element) {
@@ -189,7 +199,7 @@
 
             loadBalance();
         } else {
-            authArea.innerHTML = `<button class="btn btn-login" onclick="document.getElementById('loginModal').style.display='flex'">Đăng Nhập</button>`;
+            authArea.innerHTML = `<button class="btn btn-login" onclick="openLoginModal()"><i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập</button>`;
             balanceArea.style.display = 'none';
             adminTabNav.style.display = 'none';
         }
@@ -201,17 +211,13 @@
         updateAuthUI();
     }
 
-    // Tải số dư chuẩn trực tiếp từ Server
     async function loadBalance() {
         if (!currentUser) return;
         try {
             const res = await fetch(`/api/user/balance?username=${encodeURIComponent(currentUser.username)}`);
             const data = await res.json();
             if (data.status === 'success') {
-                // Cập nhật giá trị hiển thị số dư khả dụng thực tế
                 document.getElementById('usableBalance').innerText = formatMoney(data.usableBalance);
-                
-                // Cập nhật lại localStorage để tránh bị lệch tiền cũ
                 currentUser.balance = data.usableBalance;
                 localStorage.setItem('user', JSON.stringify(currentUser));
 
@@ -242,10 +248,10 @@
 
                 filterServices();
             } else {
-                document.getElementById('categorySelect').innerHTML = '<option>Không có dịch vụ TikTok</option>';
+                document.getElementById('categorySelect').innerHTML = '<option>Không tìm thấy dịch vụ TikTok</option>';
             }
         } catch (e) {
-            console.error("Lỗi lấy dịch vụ:", e);
+            console.error("Lỗi tải dịch vụ:", e);
         }
     }
 
@@ -291,9 +297,9 @@
 
         profileBox.innerHTML = `
             <div class="list-item">
-                <p style="margin-bottom: 6px;"><strong>Tên tài khoản:</strong> ${currentUser.username}</p>
-                <p style="margin-bottom: 6px;"><strong>Chức vụ:</strong> ${currentUser.role === 'root_admin' ? 'Root Admin (Quản trị viên)' : 'Thành viên'}</p>
-                <p><strong>Trạng thái:</strong> <span style="color: #34d399;">Đã xác minh</span></p>
+                <p style="margin-bottom: 6px;"><strong>Tài khoản:</strong> ${currentUser.username}</p>
+                <p style="margin-bottom: 6px;"><strong>Cấp độ:</strong> ${currentUser.role === 'root_admin' ? 'Root Admin (Quản trị viên)' : 'Thành viên'}</p>
+                <p><strong>Trạng thái:</strong> <span style="color: #34d399;">Đã kích hoạt</span></p>
             </div>
         `;
     }
@@ -307,8 +313,8 @@
         if (data.status === 'success') {
             box.innerHTML = data.data.map(u => `
                 <div class="list-item">
-                    <p><strong>Username:</strong> ${u.username} (${u.role})</p>
-                    <p><strong>Số dư:</strong> ${formatMoney(u.balance)}</p>
+                    <p><strong>Tài khoản:</strong> ${u.username} (${u.role})</p>
+                    <p><strong>Số dư khả dụng:</strong> ${formatMoney(u.balance)}</p>
                 </div>
             `).join('');
         }
@@ -318,7 +324,7 @@
         const targetUsername = document.getElementById('adminTargetUser').value.trim();
         const amount = document.getElementById('adminAmount').value;
 
-        if (!targetUsername || !amount) return alert('Vui lòng điền đủ thông tin');
+        if (!targetUsername || !amount) return alert('Vui lòng nhập đủ tên tài khoản và số tiền');
 
         const res = await fetch('/api/admin/adjust-balance', {
             method: 'POST',
@@ -380,30 +386,40 @@
         }
     }
 
+    // Đăng nhập hệ thống
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const res = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                username: document.getElementById('loginUsername').value.trim(),
-                password: document.getElementById('loginPassword').value
-            })
-        });
-        const data = await res.json();
-        if (res.ok && data.status === 'success') {
-            localStorage.setItem('user', JSON.stringify(data.user));
-            currentUser = data.user;
-            document.getElementById('loginModal').style.display = 'none';
-            updateAuthUI();
-        } else {
-            alert(data.message);
+        const usernameInput = document.getElementById('loginUsername').value.trim();
+        const passwordInput = document.getElementById('loginPassword').value;
+
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: usernameInput, password: passwordInput })
+            });
+
+            const data = await res.json();
+            if (res.ok && data.status === 'success') {
+                localStorage.setItem('user', JSON.stringify(data.user));
+                currentUser = data.user;
+                closeLoginModal();
+                updateAuthUI();
+                alert(`Xin chào ${currentUser.username}!`);
+            } else {
+                alert(data.message || "Tài khoản hoặc mật khẩu không chính xác!");
+            }
+        } catch (err) {
+            alert("Lỗi kết nối máy chủ đăng nhập");
         }
     });
 
     document.getElementById('orderForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!currentUser) return alert("Vui lòng đăng nhập!");
+        if (!currentUser) {
+            openLoginModal();
+            return alert("Vui lòng đăng nhập để thực hiện giao dịch!");
+        }
 
         const res = await fetch('/api/order', {
             method: 'POST',
