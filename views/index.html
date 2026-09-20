@@ -3,720 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Dịch Vụ TikTok Auto API</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --bg-main: #0b0f19;
-            --bg-card: #111827;
-            --bg-input: #1f2937;
-            --primary: #0ea5e9;
-            --primary-hover: #0284c7;
-            --accent: #10b981;
-            --accent-hover: #059669;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            --border-color: rgba(255, 255, 255, 0.08);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
-        body { background: var(--bg-main); color: var(--text-main); padding: 16px 12px; min-height: 100vh; }
-        .container { max-width: 520px; margin: 0 auto; }
-        
-        /* Header / Navbar */
-        .navbar { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 12px 18px; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-        .logo { font-size: 18px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; }
-        .logo i { font-size: 22px; filter: drop-shadow(0 0 8px rgba(14, 165, 233, 0.4)); }
-        .nav-actions { display: flex; align-items: center; gap: 8px; }
-        
-        /* Buttons */
-        .btn { border: none; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; }
-        .btn-login { background: linear-gradient(135deg, #10b981, #059669); color: #fff; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); }
-        .btn-login:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35); }
-        .btn-logout { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-        .btn-logout:hover { background: rgba(239, 68, 68, 0.25); }
-        
-        .user-info-tag { background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); padding: 8px 12px; border-radius: 12px; font-size: 12px; color: var(--primary); font-weight: 700; display: flex; align-items: center; gap: 6px; }
-
-        /* Balance Cards */
-        .balance-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-        .balance-card { background: var(--bg-card); border: 1px solid var(--border-color); padding: 16px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-        .balance-title { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-        .balance-value { font-size: 18px; font-weight: 800; margin-top: 6px; color: #34d399; }
-        .balance-value.api { color: var(--primary); }
-
-        /* Main Card */
-        .card { background: var(--bg-card); border-radius: 20px; padding: 20px; border: 1px solid var(--border-color); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
-        
-        /* Navigation Tabs */
-        .main-tabs { display: flex; background: rgba(0, 0, 0, 0.3); padding: 6px; border-radius: 14px; margin-bottom: 20px; gap: 4px; border: 1px solid var(--border-color); }
-        .tab-item { flex: 1; text-align: center; padding: 10px 4px; border-radius: 10px; font-size: 11px; font-weight: 700; color: var(--text-muted); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: all 0.2s ease; }
-        .tab-item i { font-size: 15px; }
-        .tab-item.active { background: var(--bg-input); color: var(--primary); border: 1px solid rgba(14, 165, 233, 0.3); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-        
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        
-        /* Form Inputs */
-        .form-group { margin-bottom: 16px; }
-        label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; }
-        .input-wrapper { position: relative; display: flex; align-items: center; }
-        .input-wrapper i.input-icon { position: absolute; left: 14px; color: var(--text-muted); font-size: 14px; pointer-events: none; }
-        select, input { width: 100%; padding: 12px 14px 12px 40px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-input); color: #fff; font-size: 13px; outline: none; transition: all 0.2s ease; }
-        select { padding-left: 14px; cursor: pointer; }
-        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15); }
-
-        .total-box { background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3); padding: 16px; border-radius: 14px; text-align: center; margin: 20px 0; }
-        .total-price { font-size: 24px; font-weight: 800; color: #34d399; margin-top: 4px; text-shadow: 0 0 10px rgba(52, 211, 153, 0.2); }
-        
-        /* Submit Button */
-        button.btn-submit { width: 100%; padding: 14px; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 12px; color: #fff; font-weight: 800; font-size: 15px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; gap: 8px; }
-        button.btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); }
-        button.btn-submit:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
-        
-        .btn-submit.loading-state { background: linear-gradient(135deg, #0284c7, #0369a1); }
-        .btn-submit.success-state { background: linear-gradient(135deg, #10b981, #047857); }
-
-        /* Modal Login */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(3, 7, 18, 0.85); backdrop-filter: blur(8px); justify-content: center; align-items: center; z-index: 9999; }
-        .modal-content { background: var(--bg-card); padding: 24px; border-radius: 24px; width: 90%; max-width: 380px; border: 1px solid rgba(14, 165, 233, 0.25); position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.6); text-align: center; }
-        .close-modal { position: absolute; top: 16px; right: 18px; font-size: 20px; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
-        .close-modal:hover { color: #fff; }
-        
-        .shield-icon-wrapper { width: 56px; height: 56px; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; box-shadow: 0 0 20px rgba(14, 165, 233, 0.2); }
-        .shield-icon-wrapper i { font-size: 26px; color: var(--primary); }
-
-        .list-item { background: var(--bg-input); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); margin-bottom: 10px; font-size: 12px; }
-        .status-badge { display: inline-block; padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: 800; }
-        .status-on { background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
-        .status-off { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-
-        /* Nút ẩn/hiện mắt mật khẩu Admin */
-        .toggle-eye-btn { background: rgba(14, 165, 233, 0.15); border: 1px solid rgba(14, 165, 233, 0.3); color: var(--primary); padding: 4px 8px; border-radius: 8px; cursor: pointer; font-size: 11px; margin-left: 6px; transition: 0.2s; }
-        .toggle-eye-btn:hover { background: rgba(14, 165, 233, 0.3); }
-
-        .admin-section-box { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); padding: 16px; border-radius: 16px; margin-bottom: 20px; }
-
-        .support-box { background: rgba(14, 165, 233, 0.05); border: 1px solid rgba(14, 165, 233, 0.2); border-radius: 16px; padding: 16px; margin-top: 16px; }
-        .support-title { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-        .support-btn { display: flex; align-items: center; justify-content: center; gap: 8px; text-align: center; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 700; text-decoration: none; color: #fff; background: #0068ff; box-shadow: 0 4px 12px rgba(0, 104, 255, 0.3); transition: 0.2s; }
-        .support-btn:hover { background: #0056d6; }
-
-        /* Toast Popup Thông Báo */
-        #toastContainer { position: fixed; top: 20px; right: 20px; z-index: 10000; }
-        .toast { background: var(--bg-card); border: 1px solid var(--border-color); color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 10px; animation: slideIn 0.3s forwards, fadeOut 0.3s 2.7s forwards; }
-        .toast.success { border-color: rgba(16, 185, 129, 0.5); }
-        .toast.error { border-color: rgba(239, 68, 68, 0.5); }
-        .toast.success i { color: #34d399; }
-        .toast.error i { color: #f87171; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-    </style>
+    <title>TikTok Auto API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-
-<div id="toastContainer"></div>
-
-<div class="container">
-    <div class="navbar">
-        <div class="logo"><i class="fa-brands fa-tiktok"></i> TikTok Auto API</div>
-        <div class="nav-actions" id="authArea"></div>
-    </div>
-
-    <div class="balance-container" id="balanceArea" style="display: none;">
-        <div class="balance-card">
-            <div class="balance-title"><i class="fa-solid fa-wallet"></i> Số Dư Sử Dụng</div>
-            <div class="balance-value" id="usableBalance">0 đ</div>
-        </div>
-        <div class="balance-card" id="apiBalanceCard" style="display: none;">
-            <div class="balance-title"><i class="fa-solid fa-server"></i> Số Dư API Thực</div>
-            <div class="balance-value api" id="apiRealBalance">0 đ</div>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="main-tabs">
-            <div class="tab-item active" onclick="switchTab('orderTab', this)"><i class="fa-solid fa-cart-shopping"></i> Đặt Đơn</div>
-            <div class="tab-item" onclick="switchTab('historyTab', this); loadOrders();"><i class="fa-solid fa-clock-rotate-left"></i> Đơn Hàng</div>
-            <div class="tab-item" onclick="switchTab('changesTab', this); loadChanges();"><i class="fa-solid fa-receipt"></i> Biến Động</div>
-            <div class="tab-item" onclick="switchTab('profileTab', this); loadProfile();"><i class="fa-solid fa-user-gear"></i> Tài Khoản</div>
-            <div class="tab-item" id="adminTabNav" style="display: none;" onclick="switchTab('adminTab', this); loadAdminData();"><i class="fa-solid fa-shield-halved"></i> Quản Lý</div>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4">
+    <div class="max-w-xl mx-auto space-y-4">
+        <!-- Header -->
+        <div class="flex justify-between items-center bg-slate-900 p-4 rounded-xl border border-slate-800">
+            <h1 class="text-lg font-bold text-cyan-400">TikTok Auto API</h1>
+            <span id="currentUser" class="text-sm bg-slate-800 px-3 py-1 rounded-lg"></span>
         </div>
 
-        <div class="tab-content active" id="orderTab">
-            <form id="orderForm">
-                <div class="form-group">
-                    <label><i class="fa-solid fa-layer-group"></i> Phân loại dịch vụ TikTok:</label>
-                    <select id="categorySelect" onchange="filterServices()"></select>
-                </div>
-                <div class="form-group">
-                    <label><i class="fa-solid fa-list-check"></i> Dịch vụ cụ thể:</label>
-                    <select id="serviceSelect" onchange="updateDetails()"></select>
-                </div>
-                <div class="form-group">
-                    <label><i class="fa-solid fa-link"></i> Link Video / Profile TikTok:</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-globe input-icon"></i>
-                        <input type="url" id="link" placeholder="https://www.tiktok.com/@..." required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label><i class="fa-solid fa-calculator"></i> Số lượng:</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-hashtag input-icon"></i>
-                        <input type="number" id="quantity" value="1000" oninput="calculateTotal()" required>
-                    </div>
-                    <small id="limitHint" style="color: var(--text-muted); font-size: 11px; margin-top: 6px; display: block;"></small>
-                </div>
-                <div class="total-box">
-                    <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Tổng tiền thanh toán:</span>
-                    <div class="total-price" id="totalPrice">0 đ</div>
-                </div>
-                <button type="submit" id="submitOrderBtn" class="btn-submit">
-                    <i class="fa-solid fa-rocket" id="btnIcon"></i> <span id="btnText">Tạo Đơn Hàng Ngay</span>
-                </button>
-            </form>
-        </div>
-
-        <div class="tab-content" id="historyTab"><div id="historyList">Chưa có đơn hàng nào.</div></div>
-        <div class="tab-content" id="changesTab"><div id="changesList">Chưa có biến động số dư.</div></div>
-        
-        <!-- Tab Tài Khoản -->
-        <div class="tab-content" id="profileTab">
-            <div id="profileContent"></div>
-        </div>
-        
-        <!-- Tab Quản Lý Admin -->
-        <div class="tab-content" id="adminTab">
-            
-            <!-- Mục 1: Đã chuyển sang cấp tài khoản trực tiếp trong Admin -->
-            <div class="admin-section-box">
-                <h4 style="margin-bottom: 12px; color: #38bdf8; font-size: 14px;"><i class="fa-solid fa-user-plus"></i> Tạo Tài Khoản User Mới</h4>
-                <div class="form-group">
-                    <label><i class="fa-solid fa-user"></i> Tên tài khoản user:</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-at input-icon"></i>
-                        <input type="text" id="createUserUsername" placeholder="Nhập username mới">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label><i class="fa-solid fa-lock"></i> Mật khẩu cấp cho user:</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-key input-icon"></i>
-                        <input type="text" id="createUserPassword" placeholder="Nhập mật khẩu cấp">
-                    </div>
-                </div>
-                <button type="button" class="btn btn-login" style="width: 100%; justify-content: center;" onclick="createNewUserByAdmin()">
-                    <i class="fa-solid fa-user-check"></i> Cấp Tài Khoản Mới
-                </button>
+        <!-- Số dư -->
+        <div class="grid grid-cols-2 gap-3">
+            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
+                <p class="text-xs text-slate-400">SỐ DƯ SỬ DỤNG</p>
+                <p id="usableBalance" class="text-xl font-extrabold text-emerald-400">0 đ</p>
             </div>
-
-            <!-- Mục 2: Cộng Trừ Tiền -->
-            <div class="admin-section-box">
-                <h4 style="margin-bottom: 12px; color: #38bdf8; font-size: 14px;"><i class="fa-solid fa-coins"></i> Cộng / Trừ Tiền Thành Viên</h4>
-                <div class="form-group">
-                    <label><i class="fa-solid fa-user"></i> Tên tài khoản nhận:</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-at input-icon"></i>
-                        <input type="text" id="adminTargetUser" placeholder="Nhập username">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label><i class="fa-solid fa-money-bill-wave"></i> Số tiền (VNĐ):</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-dong-sign input-icon"></i>
-                        <input type="number" id="adminAmount" placeholder="Ví dụ: 100000">
-                    </div>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button type="button" class="btn btn-login" style="flex:1; justify-content:center;" onclick="adjustBalance('add')"><i class="fa-solid fa-plus"></i> Cộng Tiền</button>
-                    <button type="button" class="btn btn-logout" style="flex:1; justify-content:center;" onclick="adjustBalance('subtract')"><i class="fa-solid fa-minus"></i> Trừ Tiền</button>
-                </div>
+            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
+                <p class="text-xs text-slate-400">SỐ DƯ API THỰC</p>
+                <p id="realApiBalance" class="text-xl font-extrabold text-cyan-400">0 đ</p>
             </div>
+        </div>
 
-            <!-- Mục 3: Danh sách User -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h4 style="color: var(--primary); font-size: 14px;"><i class="fa-solid fa-users"></i> Danh Sách Người Dùng</h4>
-                <button class="btn btn-login" style="padding: 6px 10px; font-size: 11px;" onclick="loadAdminData()"><i class="fa-solid fa-rotate"></i> Làm mới</button>
+        <!-- Form Đặt Đơn & Lọc Dịch Vụ -->
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3">
+            <div>
+                <label class="text-xs text-slate-400">Phân loại dịch vụ:</label>
+                <select id="categorySelect" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 mt-1 text-sm outline-none">
+                    <option value="">-- Chọn danh mục --</option>
+                </select>
             </div>
-            <div id="adminUserList"></div>
+            <div>
+                <label class="text-xs text-slate-400">Dịch vụ cụ thể:</label>
+                <select id="serviceSelect" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 mt-1 text-sm outline-none">
+                    <option value="">-- Chọn dịch vụ --</option>
+                </select>
+            </div>
         </div>
     </div>
 
-    <!-- Sửa link Zalo thành zalo.me/0862695221 -->
-    <div class="support-box">
-        <div class="support-title"><i class="fa-solid fa-headset"></i> Trung Tâm Hỗ Trợ Kỹ Thuật</div>
-        <a href="https://zalo.me/0862695221" target="_blank" class="support-btn"><i class="fa-solid fa-comment-dots"></i> Hỗ Trợ Qua Zalo</a>
-    </div>
-</div>
+    <script>
+        let servicesData = [];
+        const loggedUser = localStorage.getItem('username') || 'admin'; // Giả lập user đang đăng nhập để test
+        document.getElementById('currentUser').innerText = loggedUser;
 
-<!-- Modal Đăng Nhập (Đã xóa Đăng Ký Public) -->
-<div class="modal" id="loginModal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="closeLoginModal()">&times;</span>
-        <div class="shield-icon-wrapper">
-            <i class="fa-solid fa-shield-halved"></i>
-        </div>
-        
-        <h3 style="margin-bottom: 16px; color: var(--primary); font-size: 16px;">Đăng Nhập Hệ Thống</h3>
-
-        <form id="loginForm">
-            <div class="form-group" style="text-align: left;">
-                <label><i class="fa-solid fa-user"></i> Tài khoản</label>
-                <div class="input-wrapper">
-                    <i class="fa-solid fa-user input-icon"></i>
-                    <input type="text" id="loginUsername" placeholder="Nhập username" required>
-                </div>
-            </div>
-            <div class="form-group" style="text-align: left;">
-                <label><i class="fa-solid fa-lock"></i> Mật khẩu</label>
-                <div class="input-wrapper">
-                    <i class="fa-solid fa-key input-icon"></i>
-                    <input type="password" id="loginPassword" placeholder="Nhập mật khẩu" required>
-                </div>
-            </div>
-            <button type="submit" class="btn-submit" style="margin-top: 10px;"><i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập Ngay</button>
-        </form>
-    </div>
-</div>
-
-<script>
-    let currentUser = JSON.parse(localStorage.getItem('user'));
-    let apiServices = [];
-    let currentCalculatedPrice = 0;
-
-    function formatMoney(amount) {
-        let num = Number(amount) || 0;
-        return num.toLocaleString('vi-VN') + ' đ';
-    }
-
-    function showToast(message, type = 'success') {
-        const container = document.getElementById('toastContainer');
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-xmark'}"></i> ${message}`;
-        container.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-
-    function openLoginModal() { document.getElementById('loginModal').style.display = 'flex'; }
-    function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
-
-    function switchTab(tabId, element) {
-        document.querySelectorAll('.tab-item').forEach(e => e.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
-        element.classList.add('active');
-        document.getElementById(tabId).classList.add('active');
-    }
-
-    function updateAuthUI() {
-        const authArea = document.getElementById('authArea');
-        const balanceArea = document.getElementById('balanceArea');
-        const adminTabNav = document.getElementById('adminTabNav');
-
-        if (currentUser) {
-            authArea.innerHTML = `
-                <div class="user-info-tag"><i class="fa-solid fa-user-check"></i> ${currentUser.username}</div>
-                <button class="btn btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
-            `;
-            balanceArea.style.display = 'grid';
-
-            if (currentUser.role === 'root_admin') {
-                adminTabNav.style.display = 'flex';
-            } else {
-                adminTabNav.style.display = 'none';
-            }
-
-            loadBalance();
-        } else {
-            authArea.innerHTML = `<button class="btn btn-login" onclick="openLoginModal()"><i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập</button>`;
-            balanceArea.style.display = 'none';
-            adminTabNav.style.display = 'none';
-        }
-    }
-
-    function logout() {
-        localStorage.removeItem('user');
-        currentUser = null;
-        updateAuthUI();
-        showToast("Đã đăng xuất tài khoản", "error");
-    }
-
-    async function loadBalance() {
-        if (!currentUser) return;
-        try {
-            const res = await fetch(`/api/user/balance?username=${encodeURIComponent(currentUser.username)}`);
-            const data = await res.json();
-            if (data.status === 'success') {
-                document.getElementById('usableBalance').innerText = formatMoney(data.usableBalance);
-                currentUser.balance = data.usableBalance;
-                localStorage.setItem('user', JSON.stringify(currentUser));
-
-                if (data.role === 'root_admin') {
-                    document.getElementById('apiBalanceCard').style.display = 'block';
-                    document.getElementById('apiRealBalance').innerText = formatMoney(data.realApiBalance);
-                } else {
-                    document.getElementById('apiBalanceCard').style.display = 'none';
+        // Load Số dư
+        async function fetchBalance() {
+            try {
+                const res = await fetch(`/api/user/balance?username=${loggedUser}`);
+                const data = await res.json();
+                if(data.status === 'success') {
+                    document.getElementById('usableBalance').innerText = Number(data.usableBalance).toLocaleString() + ' đ';
+                    document.getElementById('realApiBalance').innerText = Number(data.realApiBalance).toLocaleString() + ' đ';
                 }
-            }
-        } catch (err) {
-            console.error("Lỗi lấy số dư:", err);
-        }
-    }
-
-    async function fetchApiServices() {
-        try {
-            const res = await fetch('/api/services');
-            const data = await res.json();
-
-            if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
-                apiServices = data.data;
-                const categories = [...new Set(apiServices.map(s => s.category))];
-                const catSelect = document.getElementById('categorySelect');
-                catSelect.innerHTML = '';
-                categories.forEach(c => catSelect.innerHTML += `<option value="${c}">${c}</option>`);
-                filterServices();
-            } else {
-                document.getElementById('categorySelect').innerHTML = '<option>Không tìm thấy dịch vụ TikTok</option>';
-            }
-        } catch (e) {
-            console.error("Lỗi tải dịch vụ:", e);
-        }
-    }
-
-    function filterServices() {
-        const cat = document.getElementById('categorySelect').value;
-        const filtered = apiServices.filter(s => s.category === cat);
-        const serviceSelect = document.getElementById('serviceSelect');
-        serviceSelect.innerHTML = '';
-        filtered.forEach(s => {
-            serviceSelect.innerHTML += `<option value="${s.service}">[ID ${s.service}] ${s.name} - ${formatMoney(s.rate)}/1k</option>`;
-        });
-        updateDetails();
-    }
-
-    function updateDetails() {
-        const serviceId = document.getElementById('serviceSelect').value;
-        const service = apiServices.find(s => s.service == serviceId);
-        if (service) {
-            document.getElementById('limitHint').innerText = `Tối thiểu: ${Number(service.min).toLocaleString('vi-VN')} - Tối đa: ${Number(service.max).toLocaleString('vi-VN')}`;
-            calculateTotal();
-        }
-    }
-
-    function calculateTotal() {
-        const serviceId = document.getElementById('serviceSelect').value;
-        const qty = parseFloat(document.getElementById('quantity').value) || 0;
-        const service = apiServices.find(s => s.service == serviceId);
-        if (service) {
-            currentCalculatedPrice = (qty / 1000) * Number(service.rate);
-            document.getElementById('totalPrice').innerText = formatMoney(currentCalculatedPrice);
-        }
-    }
-
-    function loadProfile() {
-        const profileBox = document.getElementById('profileContent');
-        if (!currentUser) {
-            profileBox.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">Vui lòng đăng nhập để xem thông tin!</p>';
-            return;
+            } catch(e) { console.error(e); }
         }
 
-        profileBox.innerHTML = `
-            <div class="list-item" style="margin-bottom: 20px;">
-                <p style="margin-bottom: 8px;"><strong><i class="fa-solid fa-user-tag"></i> Tài khoản hiện tại:</strong> ${currentUser.username}</p>
-                <p><strong><i class="fa-solid fa-shield-halved"></i> Cấp độ:</strong> ${currentUser.role === 'root_admin' ? '<span style="color: #38bdf8; font-weight: bold;">Root Admin</span>' : 'Thành viên (User)'}</p>
-            </div>
-            
-            <h4 style="margin-bottom: 14px; color: var(--primary); font-size: 14px;"><i class="fa-solid fa-key"></i> Đổi Tên Đăng Nhập & Mật Khẩu</h4>
-            <form id="updateProfileForm">
-                <div class="form-group">
-                    <label><i class="fa-solid fa-signature"></i> Tên đăng nhập mới:</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-user input-icon"></i>
-                        <input type="text" id="newUsername" value="${currentUser.username}" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label><i class="fa-solid fa-lock"></i> Mật khẩu mới (Để trống nếu giữ nguyên):</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-key input-icon"></i>
-                        <input type="password" id="newPassword" placeholder="Nhập mật khẩu mới">
-                    </div>
-                </div>
-                <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #0284c7, #0369a1);"><i class="fa-solid fa-floppy-disk"></i> Cập Nhật Thông Tin</button>
-            </form>
-        `;
+        // Load và Lọc Dịch Vụ chuẩn từ API
+        async function fetchServices() {
+            try {
+                const res = await fetch('/api/services');
+                const json = await res.json();
+                if(json.status === 'success' && Array.isArray(json.data)) {
+                    servicesData = json.data;
+                    
+                    // Lọc danh mục (category) duy nhất
+                    const categories = [...new Set(servicesData.map(s => s.category))];
+                    const catSelect = document.getElementById('categorySelect');
+                    catSelect.innerHTML = '<option value="">-- Chọn danh mục --</option>';
+                    
+                    categories.forEach(cat => {
+                        const opt = document.createElement('option');
+                        opt.value = cat;
+                        opt.textContent = cat;
+                        catSelect.appendChild(opt);
+                    });
+                }
+            } catch(e) { console.error(e); }
+        }
 
-        document.getElementById('updateProfileForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newUsername = document.getElementById('newUsername').value.trim();
-            const newPassword = document.getElementById('newPassword').value;
+        // Sự kiện khi chọn Danh mục -> Lọc Dịch vụ tương ứng
+        document.getElementById('categorySelect').addEventListener('change', function(e) {
+            const selectedCat = e.target.value;
+            const serviceSelect = document.getElementById('serviceSelect');
+            serviceSelect.innerHTML = '<option value="">-- Chọn dịch vụ --</option>';
 
-            const res = await fetch('/api/user/update-profile', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    currentUsername: currentUser.username,
-                    newUsername: newUsername,
-                    newPassword: newPassword
-                })
+            const filtered = servicesData.filter(s => s.category === selectedCat);
+            filtered.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.service;
+                opt.textContent = `[ID ${s.service}] ${s.name} - ${s.rate}đ`;
+                serviceSelect.appendChild(opt);
             });
-
-            const data = await res.json();
-            showToast(data.message, data.status === 'success' ? 'success' : 'error');
-            if (data.status === 'success') {
-                currentUser = data.user;
-                localStorage.setItem('user', JSON.stringify(currentUser));
-                updateAuthUI();
-                loadProfile();
-            }
-        });
-    }
-
-    // Hàm ẩn một phần username
-    function maskUsername(username) {
-        if (!username || username.length <= 2) return username + '***';
-        return username.substring(0, 2) + '***';
-    }
-
-    // Toggle Ẩn / Hiện mật khẩu + username ở Admin
-    function toggleUserSensData(index, rawUser, rawPass) {
-        const userSpan = document.getElementById(`user-val-${index}`);
-        const passSpan = document.getElementById(`pass-val-${index}`);
-        const btnIcon = document.getElementById(`eye-icon-${index}`);
-
-        if (passSpan.dataset.hidden === 'true') {
-            userSpan.innerText = rawUser;
-            passSpan.innerText = rawPass;
-            passSpan.dataset.hidden = 'false';
-            btnIcon.className = 'fa-solid fa-eye-slash';
-        } else {
-            userSpan.innerText = maskUsername(rawUser);
-            passSpan.innerText = '••••••••';
-            passSpan.dataset.hidden = 'true';
-            btnIcon.className = 'fa-solid fa-eye';
-        }
-    }
-
-    // Admin tạo tài khoản User mới cho người khác
-    async function createNewUserByAdmin() {
-        const newUsername = document.getElementById('createUserUsername').value.trim();
-        const newPassword = document.getElementById('createUserPassword').value;
-
-        if (!newUsername || !newPassword) {
-            return showToast("Vui lòng điền đầy đủ Tên tài khoản và Mật khẩu!", "error");
-        }
-
-        try {
-            const res = await fetch('/api/admin/create-user', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    adminUsername: currentUser.username,
-                    username: newUsername,
-                    password: newPassword
-                })
-            });
-
-            const data = await res.json();
-            showToast(data.message, data.status === 'success' ? 'success' : 'error');
-            if (data.status === 'success') {
-                document.getElementById('createUserUsername').value = '';
-                document.getElementById('createUserPassword').value = '';
-                loadAdminData();
-            }
-        } catch (err) {
-            showToast("Lỗi kết nối máy chủ tạo tài khoản", "error");
-        }
-    }
-
-    async function loadAdminData() {
-        if (!currentUser || currentUser.role !== 'root_admin') return;
-        const res = await fetch(`/api/admin/users?adminUsername=${encodeURIComponent(currentUser.username)}`);
-        const data = await res.json();
-        const box = document.getElementById('adminUserList');
-
-        if (data.status === 'success') {
-            box.innerHTML = data.data.map((u, idx) => `
-                <div class="list-item">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <strong><i class="fa-solid fa-user"></i> <span id="user-val-${idx}">${maskUsername(u.username)}</span> (${u.role})</strong>
-                        <div>
-                            <span class="status-badge ${u.status === 'ON' ? 'status-on' : 'status-off'}">${u.status}</span>
-                            <button class="toggle-eye-btn" onclick="toggleUserSensData(${idx}, '${u.username}', '${u.password}')">
-                                <i class="fa-solid fa-eye" id="eye-icon-${idx}"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <p style="margin-bottom: 4px;"><strong><i class="fa-solid fa-key"></i> Mật khẩu:</strong> <span style="color: #f87171;" id="pass-val-${idx}" data-hidden="true">••••••••</span></p>
-                    <p style="margin-bottom: 4px;"><strong><i class="fa-solid fa-network-wired"></i> IP Đăng Nhập:</strong> <span style="color: var(--primary);">${u.ip}</span></p>
-                    <p style="margin-bottom: 4px;"><strong><i class="fa-solid fa-wallet"></i> Số Dư:</strong> ${formatMoney(u.balance)}</p>
-                    <p style="color: var(--text-muted); font-size: 10px; margin-top: 4px;"><i class="fa-solid fa-clock"></i> Hoạt động cuối: ${u.lastActive}</p>
-                </div>
-            `).join('');
-        }
-    }
-
-    async function adjustBalance(type) {
-        const targetUsername = document.getElementById('adminTargetUser').value.trim();
-        const amount = document.getElementById('adminAmount').value;
-
-        if (!targetUsername || !amount) return showToast('Vui lòng nhập đủ tên tài khoản và số tiền', 'error');
-
-        const res = await fetch('/api/admin/adjust-balance', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                adminUsername: currentUser.username,
-                targetUsername: targetUsername,
-                amount: amount,
-                type: type
-            })
         });
 
-        const data = await res.json();
-        showToast(data.message, data.status === 'success' ? 'success' : 'error');
-        if (data.status === 'success') {
-            loadBalance();
-            loadAdminData();
-        }
-    }
-
-    async function loadOrders() {
-        if (!currentUser) return;
-        const res = await fetch(`/api/user/orders?username=${encodeURIComponent(currentUser.username)}`);
-        const data = await res.json();
-        const box = document.getElementById('historyList');
-
-        if (data.status === 'success' && data.data.length > 0) {
-            box.innerHTML = data.data.map(o => `
-                <div class="list-item">
-                    <p><strong>Mã đơn API:</strong> #${o.id}</p>
-                    <p><strong>Dịch vụ ID:</strong> ${o.service}</p>
-                    <p><strong>Số lượng:</strong> ${o.quantity}</p>
-                    <p><strong>Tổng tiền:</strong> ${formatMoney(o.price)}</p>
-                    <p style="color: var(--text-muted); font-size: 10px; margin-top:4px;">${o.createdAt}</p>
-                </div>
-            `).join('');
-        } else {
-            box.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">Chưa có đơn hàng nào.</p>';
-        }
-    }
-
-    async function loadChanges() {
-        if (!currentUser) return;
-        const res = await fetch(`/api/user/balance-changes?username=${encodeURIComponent(currentUser.username)}`);
-        const data = await res.json();
-        const box = document.getElementById('changesList');
-
-        if (data.status === 'success' && data.data.length > 0) {
-            box.innerHTML = data.data.map(c => `
-                <div class="list-item">
-                    <p><strong>Nội dung:</strong> ${c.description}</p>
-                    <p><strong>Số tiền:</strong> <span style="color: ${c.amount < 0 ? '#f87171' : '#34d399'};">${formatMoney(c.amount)}</span></p>
-                    <p><strong>Số dư sau GD:</strong> ${formatMoney(c.lastBalance)}</p>
-                    <p style="color: var(--text-muted); font-size: 10px; margin-top:4px;">${c.time}</p>
-                </div>
-            `).join('');
-        } else {
-            box.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">Chưa có biến động số dư.</p>';
-        }
-    }
-
-    // Xử lý Đăng Nhập
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const usernameInput = document.getElementById('loginUsername').value.trim();
-        const passwordInput = document.getElementById('loginPassword').value;
-
-        try {
-            const res = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: usernameInput, password: passwordInput })
-            });
-
-            const data = await res.json();
-            if (res.ok && data.status === 'success') {
-                localStorage.setItem('user', JSON.stringify(data.user));
-                currentUser = data.user;
-                closeLoginModal();
-                updateAuthUI();
-                showToast(`Xin chào ${currentUser.username}!`);
-            } else {
-                showToast(data.message || "Tài khoản hoặc mật khẩu không chính xác!", "error");
-            }
-        } catch (err) {
-            showToast("Lỗi kết nối máy chủ đăng nhập", "error");
-        }
-    });
-
-    // Xử lý Đặt Đơn + Hiệu ứng Loading & Tích V Thành Công
-    document.getElementById('orderForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!currentUser) {
-            openLoginModal();
-            return showToast("Vui lòng đăng nhập để thực hiện giao dịch!", "error");
-        }
-
-        const btn = document.getElementById('submitOrderBtn');
-        const btnIcon = document.getElementById('btnIcon');
-        const btnText = document.getElementById('btnText');
-
-        btn.disabled = true;
-        btn.classList.add('loading-state');
-        btnIcon.className = 'fa-solid fa-spinner fa-spin';
-        btnText.innerText = 'Đang Xử Lý Đơn Hàng...';
-
-        try {
-            const res = await fetch('/api/order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: currentUser.username,
-                    service: document.getElementById('serviceSelect').value,
-                    link: document.getElementById('link').value,
-                    quantity: document.getElementById('quantity').value,
-                    price: currentCalculatedPrice
-                })
-            });
-
-            const data = await res.json();
-
-            if (res.ok && data.status === 'success') {
-                btn.classList.remove('loading-state');
-                btn.classList.add('success-state');
-                btnIcon.className = 'fa-solid fa-circle-check';
-                btnText.innerText = 'Tạo Đơn Thành Công!';
-
-                showToast(`Tạo đơn thành công! Mã đơn API #${data.orderId}`);
-                loadBalance();
-
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.classList.remove('success-state');
-                    btnIcon.className = 'fa-solid fa-rocket';
-                    btnText.innerText = 'Tạo Đơn Hàng Ngay';
-                }, 2500);
-
-            } else {
-                showToast(`Lỗi: ${data.message}`, "error");
-                btn.disabled = false;
-                btn.classList.remove('loading-state');
-                btnIcon.className = 'fa-solid fa-rocket';
-                btnText.innerText = 'Tạo Đơn Hàng Ngay';
-            }
-        } catch (err) {
-            showToast("Đã xảy ra lỗi khi gửi yêu cầu", "error");
-            btn.disabled = false;
-            btn.classList.remove('loading-state');
-            btnIcon.className = 'fa-solid fa-rocket';
-            btnText.innerText = 'Tạo Đơn Hàng Ngay';
-        }
-    });
-
-    updateAuthUI();
-    fetchApiServices();
-</script>
+        fetchBalance();
+        fetchServices();
+    </script>
 </body>
 </html>
