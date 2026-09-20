@@ -6,52 +6,184 @@
     <title>TikTok Auto API</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen p-4">
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 pb-20">
     <div class="max-w-xl mx-auto space-y-4">
-        <!-- Header -->
-        <div class="flex justify-between items-center bg-slate-900 p-4 rounded-xl border border-slate-800">
-            <h1 class="text-lg font-bold text-cyan-400">TikTok Auto API</h1>
-            <span id="currentUser" class="text-sm bg-slate-800 px-3 py-1 rounded-lg"></span>
-        </div>
-
-        <!-- Số dư -->
-        <div class="grid grid-cols-2 gap-3">
-            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
-                <p class="text-xs text-slate-400">SỐ DƯ SỬ DỤNG</p>
-                <p id="usableBalance" class="text-xl font-extrabold text-emerald-400">0 đ</p>
-            </div>
-            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
-                <p class="text-xs text-slate-400">SỐ DƯ API THỰC</p>
-                <p id="realApiBalance" class="text-xl font-extrabold text-cyan-400">0 đ</p>
-            </div>
-        </div>
-
-        <!-- Form Đặt Đơn & Lọc Dịch Vụ -->
-        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3">
+        
+        <!-- MÀN HÌNH ĐĂNG NHẬP -->
+        <div id="loginSection" class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4 mt-20">
+            <h2 class="text-xl font-bold text-cyan-400 text-center">Đăng Nhập Hệ Thống</h2>
             <div>
-                <label class="text-xs text-slate-400">Phân loại dịch vụ:</label>
-                <select id="categorySelect" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 mt-1 text-sm outline-none">
-                    <option value="">-- Chọn danh mục --</option>
-                </select>
+                <label class="text-xs text-slate-400">Tài khoản</label>
+                <input type="text" id="loginUser" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 mt-1 text-sm outline-none focus:border-cyan-500" placeholder="Nhập tên đăng nhập...">
             </div>
             <div>
-                <label class="text-xs text-slate-400">Dịch vụ cụ thể:</label>
-                <select id="serviceSelect" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 mt-1 text-sm outline-none">
-                    <option value="">-- Chọn dịch vụ --</option>
-                </select>
+                <label class="text-xs text-slate-400">Mật khẩu</label>
+                <input type="password" id="loginPass" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 mt-1 text-sm outline-none focus:border-cyan-500" placeholder="Nhập mật khẩu...">
             </div>
+            <button onclick="handleLogin()" class="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold p-3 rounded-lg transition">Đăng Nhập</button>
+        </div>
+
+        <!-- MÀN HÌNH CHÍNH (Ẩn khi chưa đăng nhập) -->
+        <div id="mainSection" class="space-y-4 hidden">
+            <!-- Header -->
+            <div class="flex justify-between items-center bg-slate-900 p-4 rounded-xl border border-slate-800">
+                <h1 class="text-base font-bold text-cyan-400">TikTok Auto API</h1>
+                <div class="flex items-center gap-2">
+                    <span id="currentUser" class="text-xs bg-slate-800 px-3 py-1.5 rounded-lg text-slate-300"></span>
+                    <button onclick="handleLogout()" class="bg-red-500/20 text-red-400 p-1.5 rounded-lg text-xs hover:bg-red-500/30">🚪</button>
+                </div>
+            </div>
+
+            <!-- Khối Số Dư -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
+                    <p class="text-[11px] text-slate-400 font-medium">SỐ DƯ SỬ DỤNG</p>
+                    <p id="usableBalance" class="text-lg font-extrabold text-emerald-400 mt-1">0 đ</p>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
+                    <p class="text-[11px] text-slate-400 font-medium">SỐ DƯ API THỰC</p>
+                    <p id="realApiBalance" class="text-lg font-extrabold text-cyan-400 mt-1">0 đ</p>
+                </div>
+            </div>
+
+            <!-- Thanh Tabs Chức Năng -->
+            <div class="flex bg-slate-900 p-1.5 rounded-xl border border-slate-800 gap-1 overflow-x-auto text-xs">
+                <button onclick="switchTab('order')" id="tab-order" class="flex-1 py-2 px-3 rounded-lg font-medium bg-cyan-500 text-slate-955 transition whitespace-nowrap">Đặt Đơn</button>
+                <button onclick="switchTab('history')" id="tab-history" class="flex-1 py-2 px-3 rounded-lg font-medium text-slate-400 hover:text-white transition whitespace-nowrap">Đơn Hàng</button>
+                <button onclick="switchTab('account')" id="tab-account" class="flex-1 py-2 px-3 rounded-lg font-medium text-slate-400 hover:text-white transition whitespace-nowrap">Tài Khoản</button>
+                <button onclick="switchTab('admin')" id="tab-admin" class="flex-1 py-2 px-3 rounded-lg font-medium text-slate-400 hover:text-white transition whitespace-nowrap hidden">Quản Lý</button>
+            </div>
+
+            <!-- TAB 1: ĐẶT ĐƠN -->
+            <div id="content-order" class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3">
+                <div>
+                    <label class="text-xs text-slate-400">Phân loại dịch vụ TikTok:</label>
+                    <select id="categorySelect" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 mt-1 text-sm outline-none">
+                        <option value="">-- Chọn danh mục --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400">Dịch vụ cụ thể:</label>
+                    <select id="serviceSelect" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 mt-1 text-sm outline-none">
+                        <option value="">-- Chọn dịch vụ --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400">Link Video / Profile TikTok:</label>
+                    <input type="text" id="orderLink" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 mt-1 text-sm outline-none" placeholder="https://www.tiktok.com/@...">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400">Số lượng:</label>
+                    <input type="number" id="orderQuantity" value="1000" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 mt-1 text-sm outline-none">
+                </div>
+                <div class="pt-2">
+                    <p class="text-xs text-slate-400">Tổng tiền thanh toán:</p>
+                    <p id="totalPriceText" class="text-lg font-bold text-emerald-400">0 đ</p>
+                </div>
+                <button onclick="submitOrder()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold p-3 rounded-lg transition mt-2">🚀 Tạo Đơn Hàng Ngay</button>
+            </div>
+
+            <!-- TAB 2: ĐƠN HÀNG -->
+            <div id="content-history" class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3 hidden">
+                <h3 class="text-sm font-bold text-slate-300">Lịch sử đơn hàng đã tạo</h3>
+                <div id="ordersList" class="space-y-2 text-xs">
+                    <p class="text-slate-500 text-center py-4">Đang tải lịch sử đơn hàng...</p>
+                </div>
+            </div>
+
+            <!-- TAB 3: TÀI KHOẢN -->
+            <div id="content-account" class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3 hidden">
+                <h3 class="text-sm font-bold text-slate-300">Thông tin tài khoản</h3>
+                <div class="space-y-2 text-sm text-slate-300">
+                    <p>Tên đăng nhập: <b id="accUsername" class="text-cyan-400"></b></p>
+                    <p>Quyền hạn: <b id="accRole" class="text-amber-400"></b></p>
+                </div>
+            </div>
+
+            <!-- TAB 4: QUẢN LÝ (Chỉ Root Admin thấy) -->
+            <div id="content-admin" class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-4 hidden">
+                <h3 class="text-sm font-bold text-cyan-400">Quản lý thành viên & Số dư</h3>
+                
+                <!-- Tạo User Mới -->
+                <div class="space-y-2 border-b border-slate-800 pb-4">
+                    <p class="text-xs font-semibold text-slate-300">Tạo tài khoản phụ mới</p>
+                    <input type="text" id="newUsername" placeholder="Tên đăng nhập" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs outline-none">
+                    <input type="password" id="newPassword" placeholder="Mật khẩu" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs outline-none">
+                    <button onclick="createNewUser()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-2 rounded-lg text-xs">Thêm Tài Khoản</button>
+                </div>
+
+                <!-- Danh sách user và cộng trừ tiền -->
+                <div class="space-y-2">
+                    <p class="text-xs font-semibold text-slate-300">Danh sách thành viên hệ thống</p>
+                    <div id="adminUserList" class="space-y-2 text-xs">
+                        <!-- Render dynamic -->
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
         let servicesData = [];
-        const loggedUser = localStorage.getItem('username') || 'admin'; // Giả lập user đang đăng nhập để test
-        document.getElementById('currentUser').innerText = loggedUser;
+        let currentPricePerUnit = 0;
 
-        // Load Số dư
-        async function fetchBalance() {
+        // Kiểm tra trạng thái đăng nhập khi load trang
+        window.onload = function() {
+            const savedUser = localStorage.getItem('username');
+            const savedRole = localStorage.getItem('role');
+            if (savedUser) {
+                showMainDashboard(savedUser, savedRole);
+            }
+        }
+
+        async function handleLogin() {
+            const u = document.getElementById('loginUser').value.trim();
+            const p = document.getElementById('loginPass').value.trim();
+            if(!u || !p) return alert('Vui lòng điền đầy đủ thông tin!');
+
             try {
-                const res = await fetch(`/api/user/balance?username=${loggedUser}`);
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: u, password: p})
+                });
+                const data = await res.json();
+                if(data.status === 'success') {
+                    localStorage.setItem('username', data.user.username);
+                    localStorage.setItem('role', data.user.role);
+                    showMainDashboard(data.user.username, data.user.role);
+                } else {
+                    alert(data.message);
+                }
+            } catch(e) { alert('Lỗi kết nối máy chủ!'); }
+        }
+
+        function handleLogout() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        function showMainDashboard(username, role) {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('mainSection').classList.remove('hidden');
+            document.getElementById('currentUser').innerText = username;
+            document.getElementById('accUsername').innerText = username;
+            document.getElementById('accRole').innerText = role;
+
+            if(role === 'root_admin') {
+                document.getElementById('tab-admin').classList.remove('hidden');
+                loadAdminUsers();
+            }
+
+            fetchBalance(username);
+            fetchServices();
+            fetchOrders(username);
+        }
+
+        async function fetchBalance(username) {
+            try {
+                const res = await fetch(`/api/user/balance?username=${username}`);
                 const data = await res.json();
                 if(data.status === 'success') {
                     document.getElementById('usableBalance').innerText = Number(data.usableBalance).toLocaleString() + ' đ';
@@ -60,19 +192,15 @@
             } catch(e) { console.error(e); }
         }
 
-        // Load và Lọc Dịch Vụ chuẩn từ API
         async function fetchServices() {
             try {
                 const res = await fetch('/api/services');
                 const json = await res.json();
                 if(json.status === 'success' && Array.isArray(json.data)) {
                     servicesData = json.data;
-                    
-                    // Lọc danh mục (category) duy nhất
                     const categories = [...new Set(servicesData.map(s => s.category))];
                     const catSelect = document.getElementById('categorySelect');
                     catSelect.innerHTML = '<option value="">-- Chọn danh mục --</option>';
-                    
                     categories.forEach(cat => {
                         const opt = document.createElement('option');
                         opt.value = cat;
@@ -83,23 +211,152 @@
             } catch(e) { console.error(e); }
         }
 
-        // Sự kiện khi chọn Danh mục -> Lọc Dịch vụ tương ứng
         document.getElementById('categorySelect').addEventListener('change', function(e) {
             const selectedCat = e.target.value;
             const serviceSelect = document.getElementById('serviceSelect');
             serviceSelect.innerHTML = '<option value="">-- Chọn dịch vụ --</option>';
-
             const filtered = servicesData.filter(s => s.category === selectedCat);
             filtered.forEach(s => {
                 const opt = document.createElement('option');
                 opt.value = s.service;
-                opt.textContent = `[ID ${s.service}] ${s.name} - ${s.rate}đ`;
+                opt.setAttribute('data-rate', s.rate);
+                opt.textContent = `[ID ${s.service}] ${s.name} (${s.rate}đ)`;
                 serviceSelect.appendChild(opt);
             });
+            calculateTotal();
         });
 
-        fetchBalance();
-        fetchServices();
+        document.getElementById('serviceSelect').addEventListener('change', calculateTotal);
+        document.getElementById('orderQuantity').addEventListener('input', calculateTotal);
+
+        function calculateTotal() {
+            const serviceSelect = document.getElementById('serviceSelect');
+            const selectedOpt = serviceSelect.options[serviceSelect.selectedIndex];
+            const rate = selectedOpt ? Number(selectedOpt.getAttribute('data-rate') || 0) : 0;
+            const quantity = Number(document.getElementById('orderQuantity').value || 0);
+            const total = (rate * quantity) / 1000; // Giá SMM thường tính theo 1000 lượng
+            currentPricePerUnit = total;
+            document.getElementById('totalPriceText').innerText = total.toLocaleString() + ' đ';
+        }
+
+        async function submitOrder() {
+            const service = document.getElementById('serviceSelect').value;
+            const link = document.getElementById('orderLink').value.trim();
+            const quantity = document.getElementById('orderQuantity').value;
+            const username = localStorage.getItem('username');
+
+            if(!service || !link) return alert('Vui lòng điền đầy đủ thông tin đơn hàng!');
+
+            try {
+                const res = await fetch('/api/order', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username, service, link, quantity, price: currentPricePerUnit})
+                });
+                const data = await res.json();
+                if(data.status === 'success') {
+                    alert('Tạo đơn hàng thành công! Mã đơn: ' + data.orderId);
+                    fetchBalance(username);
+                    fetchOrders(username);
+                } else {
+                    alert(data.message);
+                }
+            } catch(e) { alert('Lỗi tạo đơn hàng!'); }
+        }
+
+        async function fetchOrders(username) {
+            try {
+                const res = await fetch(`/api/user/orders?username=${username}`);
+                const data = await res.json();
+                if(data.status === 'success') {
+                    const listDiv = document.getElementById('ordersList');
+                    if(data.data.length === 0) {
+                        listDiv.innerHTML = '<p class="text-slate-500 text-center py-4">Chưa có đơn hàng nào.</p>';
+                        return;
+                    }
+                    listDiv.innerHTML = data.data.map(o => `
+                        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-1">
+                            <div class="flex justify-between text-cyan-400 font-bold"><span>Mã đơn: #${o.id}</span><span>${o.price.toLocaleString()}đ</span></div>
+                            <p class="text-slate-300 truncate">Link: ${o.link}</p>
+                            <p class="text-slate-400">SL: ${o.quantity} | Ngày: ${o.createdAt}</p>
+                        </div>
+                    `).join('');
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadAdminUsers() {
+            const adminUsername = localStorage.getItem('username');
+            try {
+                const res = await fetch(`/api/admin/users?adminUsername=${adminUsername}`);
+                const json = await res.json();
+                if(json.status === 'success') {
+                    const container = document.getElementById('adminUserList');
+                    container.innerHTML = json.data.map(u => `
+                        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 flex flex-col gap-2">
+                            <div class="flex justify-between">
+                                <span class="font-bold text-cyan-300">${u.username} (${u.role})</span>
+                                <span class="text-emerald-400 font-bold">${Number(u.balance).toLocaleString()}đ</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="number" id="amt_${u.username}" placeholder="Số tiền" class="w-1/2 bg-slate-900 border border-slate-800 rounded p-1 text-xs">
+                                <button onclick="adjustBalance('${u.username}', 'add')" class="bg-emerald-600 text-white px-2 py-1 rounded text-[10px]">Cộng</button>
+                                <button onclick="adjustBalance('${u.username}', 'subtract')" class="bg-red-600 text-white px-2 py-1 rounded text-[10px]">Trừ</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function createNewUser() {
+            const adminUsername = localStorage.getItem('username');
+            const username = document.getElementById('newUsername').value.trim();
+            const password = document.getElementById('newPassword').value.trim();
+            if(!username || !password) return alert('Nhập đủ thông tin user!');
+
+            try {
+                const res = await fetch('/api/admin/create-user', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({adminUsername, username, password})
+                });
+                const data = await res.json();
+                alert(data.message);
+                if(data.status === 'success') loadAdminUsers();
+            } catch(e) { alert('Lỗi tạo user'); }
+        }
+
+        async function adjustBalance(targetUsername, type) {
+            const adminUsername = localStorage.getItem('username');
+            const amount = document.getElementById(`amt_${targetUsername}`).value;
+            if(!amount || Number(amount) <= 0) return alert('Nhập số tiền hợp lệ!');
+
+            try {
+                const res = await fetch('/api/admin/adjust-balance', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({adminUsername, targetUsername, amount, type})
+                });
+                const data = await res.json();
+                alert(data.message);
+                if(data.status === 'success') {
+                    loadAdminUsers();
+                    fetchBalance(adminUsername);
+                }
+            } catch(e) { alert('Lỗi cập nhật số dư'); }
+        }
+
+        function switchTab(tabName) {
+            ['order', 'history', 'account', 'admin'].forEach(t => {
+                document.getElementById(`content-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).classList.remove('bg-cyan-500', 'text-slate-950');
+                document.getElementById(`tab-${t}`).classList.add('text-slate-400');
+            });
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}`).classList.add('bg-cyan-500', 'text-slate-950');
+            document.getElementById(`tab-${tabName}`).classList.remove('text-slate-400');
+        }
     </script>
 </body>
 </html>
