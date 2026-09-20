@@ -10,14 +10,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'views')));
 
 const PROVIDER_API_URL = process.env.PROVIDER_API_URL || 'https://dichvu.c25tool.net/api/v2';
-const PROVIDER_API_KEY = process.env.PROVIDER_API_KEY || 'c717b*********'; // Thay API Key chuẩn của bạn
+const PROVIDER_API_KEY = process.env.PROVIDER_API_KEY || 'c717b*********'; 
 
 function roundMoney(value) {
     const num = Number(value) || 0;
     return Math.round(num);
 }
 
-// Lưu trữ bộ nhớ
+// Khởi tạo tài khoản quản trị
 let users = [
     { username: 'nghuy291211', password: '123', role: 'root_admin', balance: 500000 },
     { username: 'admin', password: '123', role: 'root_admin', balance: 1000000 }
@@ -26,7 +26,7 @@ let users = [
 let orders = [];
 let balanceChanges = [];
 
-// 1. API Lấy Dịch Vụ (Chỉ lọc TikTok)
+// 1. API Dịch vụ TikTok
 app.get('/api/services', async (req, res) => {
     try {
         const response = await axios.post(PROVIDER_API_URL, new URLSearchParams({
@@ -61,11 +61,11 @@ app.get('/api/services', async (req, res) => {
             return res.status(400).json({ status: 'error', message: 'Lỗi API Key hoặc dữ liệu đối tác' });
         }
     } catch (error) {
-        return res.status(500).json({ status: 'error', message: 'Không thể kết nối máy chủ API' });
+        return res.status(500).json({ status: 'error', message: 'Lỗi kết nối máy chủ API' });
     }
 });
 
-// 2. API Lấy Số Dư Chuẩn (Trả về số dư khả dụng thực tế của user)
+// 2. API Lấy Số Dư
 app.get('/api/user/balance', async (req, res) => {
     const username = req.query.username;
     const user = users.find(u => u.username.toLowerCase() === (username || '').toLowerCase());
@@ -106,7 +106,26 @@ app.get('/api/user/balance', async (req, res) => {
     });
 });
 
-// 3. API Admin Cộng/Trừ Tiền Tài Khoản
+// 3. API Đăng Nhập
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+    const user = users.find(u => u.username.toLowerCase() === (username || '').toLowerCase() && u.password === password);
+    
+    if (!user) {
+        return res.status(400).json({ status: 'error', message: 'Tài khoản hoặc mật khẩu không đúng!' });
+    }
+    
+    res.json({
+        status: 'success',
+        user: { 
+            username: user.username, 
+            role: user.role, 
+            balance: roundMoney(user.balance) 
+        }
+    });
+});
+
+// 4. API Admin Cộng/Trừ Tiền
 app.post('/api/admin/adjust-balance', (req, res) => {
     const { adminUsername, targetUsername, amount, type } = req.body;
     const admin = users.find(u => u.username.toLowerCase() === (adminUsername || '').toLowerCase());
@@ -117,7 +136,7 @@ app.post('/api/admin/adjust-balance', (req, res) => {
 
     const targetUser = users.find(u => u.username.toLowerCase() === (targetUsername || '').toLowerCase());
     if (!targetUser) {
-        return res.status(404).json({ status: 'error', message: 'Không tìm thấy người dùng cần chỉnh sửa' });
+        return res.status(404).json({ status: 'error', message: 'Không tìm thấy người dùng' });
     }
 
     const numAmount = roundMoney(amount);
@@ -131,27 +150,14 @@ app.post('/api/admin/adjust-balance', (req, res) => {
         username: targetUser.username,
         amount: type === 'add' ? numAmount : -numAmount,
         lastBalance: targetUser.balance,
-        description: `Admin (${admin.username}) ${type === 'add' ? 'cộng' : 'trừ'} tiền hệ thống`,
+        description: `Admin (${admin.username}) ${type === 'add' ? 'cộng' : 'trừ'} tiền`,
         time: new Date().toLocaleString('vi-VN')
     });
 
     res.json({ status: 'success', message: 'Cập nhật số dư thành công', newBalance: targetUser.balance });
 });
 
-// 4. API Đăng Nhập
-app.post('/api/login', (req, res) => {
-    const { username, password } = req.body;
-    const user = users.find(u => u.username.toLowerCase() === (username || '').toLowerCase() && u.password === password);
-    if (!user) {
-        return res.status(400).json({ status: 'error', message: 'Tài khoản hoặc mật khẩu không đúng!' });
-    }
-    res.json({
-        status: 'success',
-        user: { username: user.username, role: user.role, balance: roundMoney(user.balance) }
-    });
-});
-
-// 5. API Đặt Đơn
+// 5. API Tạo Đơn
 app.post('/api/order', async (req, res) => {
     const { username, service, link, quantity, price } = req.body;
     const user = users.find(u => u.username.toLowerCase() === (username || '').toLowerCase());
