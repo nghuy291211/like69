@@ -1,150 +1,61 @@
-const express = require("express");
-const path = require("path");
+const express = require('express');
+const axios = require('axios');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const API_URL = "https://sieulike.com/api/v2";
-const API_KEY = process.env.SIEULIKE_API_KEY;
+// API URL từ ảnh của bạn
+const API_URL = 'https://dichvu.c25tool.net/api/v2'; //[span_3](start_span)[span_3](end_span)
 
-app.use(express.json());
+// Middleware giải mã dữ liệu form
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-// =========================
-// API SIEULIKE
-// =========================
-async function callSieulike(params) {
-  if (!API_KEY) {
-    return {
-      error: "Chưa cấu hình SIEULIKE_API_KEY trên Render"
-    };
-  }
+// Phục vụ giao diện HTML
+app.use(express.static(path.join(__dirname, 'views')));
 
-  const body = new URLSearchParams();
-
-  body.set("key", API_KEY);
-
-  for (const [key, value] of Object.entries(params)) {
-    body.set(key, String(value));
-  }
-
-  const response = await fetch(API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "Accept": "application/json"
-    },
-    body: body.toString()
-  });
-
-  const text = await response.text();
-
-  console.log("Sieulike HTTP:", response.status);
-  console.log("Sieulike response:", text.substring(0, 500));
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    return {
-      error: "API Sieulike không trả JSON",
-      http_status: response.status,
-      response: text.substring(0, 500)
-    };
-  }
-}
-
-// =========================
-// HEALTH
-// =========================
-app.get("/health", (req, res) => {
-  res.json({
-    ok: true,
-    server: "running"
-  });
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
 
-// =========================
-// BALANCE
-// =========================
-app.get("/api/balance", async (req, res) => {
-  try {
-    const data = await callSieulike({
-      action: "balance"
-    });
+// Endpoint xử lý đặt đơn hàng
+app.post('/api/create-order', async (req, res) => {
+    try {
+        const { apiKey, service, link, quantity, runs, interval } = req.body;
 
-    res.json(data);
-  } catch (error) {
-    console.error(error);
+        if (!apiKey || !service || !link || !quantity) {
+            return res.status(400).json({ status: 'error', message: 'Vui lòng điền đầy đủ các thông tin bắt buộc!' });
+        }
 
-    res.status(500).json({
-      error: error.message
-    });
-  }
+        // Tạo dữ liệu form urlencoded theo chuẩn SMM Panel v2[span_4](start_span)[span_4](end_span)
+        const params = new URLSearchParams();
+        params.append('key', apiKey);
+        params.append('action', 'add');
+        params.append('service', service);
+        params.append('link', link);
+        params.append('quantity', quantity);
+
+        if (runs) params.append('runs', runs);
+        if (interval) params.append('interval', interval);
+
+        // Gửi request POST[span_5](start_span)[span_5](end_span)
+        const response = await axios.post(API_URL, params, {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded' //[span_6](start_span)[span_6](end_span)
+            }
+        });
+
+        res.json({ status: 'success', data: response.data });
+    } catch (error) {
+        console.error('Lỗi khi gửi order:', error.message);
+        res.status(500).json({
+            status: 'error',
+            message: error.response ? error.response.data : error.message
+        });
+    }
 });
 
-// =========================
-// SERVICES
-// =========================
-app.get("/api/services", async (req, res) => {
-  try {
-    const data = await callSieulike({
-      action: "services"
-    });
-
-    res.json(data);
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error: error.message
-    });
-  }
-});
-
-// =========================
-// STATUS
-// =========================
-app.get("/api/status/:order", async (req, res) => {
-  try {
-    const data = await callSieulike({
-      action: "status",
-      order: req.params.order
-    });
-
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({
-      error: error.message
-    });
-  }
-});
-
-// =========================
-// STATIC WEBSITE
-// =========================
-app.use(express.static(path.join(__dirname, "public")));
-
-// =========================
-// API 404
-// =========================
-app.use("/api", (req, res) => {
-  res.status(404).json({
-    error: "API endpoint không tồn tại"
-  });
-});
-
-// =========================
-// WEBSITE FALLBACK
-// =========================
-app.get("*", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "public", "index.html")
-  );
-});
-
-// =========================
-// START
-// =========================
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(PORT, () => {
+    console.log(`Server đang chạy tại http://localhost:${PORT}`);
 });
