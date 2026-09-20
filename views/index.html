@@ -36,23 +36,17 @@
             gap: 8px; 
         }
 
-        .logo i {
-            -webkit-text-fill-color: initial;
-            color: #38bdf8;
-            font-size: 19px;
-            filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6));
-        }
-
+        .logo i { -webkit-text-fill-color: initial; color: #38bdf8; font-size: 19px; filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6)); }
         .nav-actions { display: flex; align-items: center; gap: 8px; }
 
-        /* ==================== BUTTONS DESIGN MỚI ==================== */
+        /* ==================== BUTTONS ==================== */
         .btn { 
             border: none; 
             padding: 9px 15px; 
             border-radius: 12px; 
             font-weight: 600; 
             cursor: pointer; 
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
             font-size: 13px; 
             display: inline-flex; 
             align-items: center; 
@@ -60,24 +54,11 @@
             text-decoration: none;
         }
 
-        .btn-login { 
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
-            color: #fff; 
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
-        }
-        .btn-login:active { transform: scale(0.96); }
+        .btn-login { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); }
+        .btn-login:active { transform: scale(0.95); }
 
-        .btn-admin {
-            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-            color: #fff;
-            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35);
-        }
-
-        .btn-logout { 
-            background: rgba(239, 68, 68, 0.12); 
-            color: #f87171; 
-            border: 1px solid rgba(239, 68, 68, 0.25);
-        }
+        .btn-admin { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: #fff; box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35); }
+        .btn-logout { background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); }
 
         .user-info-tag {
             background: rgba(56, 189, 248, 0.1);
@@ -102,19 +83,16 @@
             backdrop-filter: blur(10px);
             position: relative;
             overflow: hidden;
+            transition: transform 0.3s ease;
         }
-        .balance-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 3px;
-            background: linear-gradient(90deg, #10b981, transparent);
-        }
+        .balance-card:hover { transform: translateY(-2px); }
+        .balance-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #10b981, transparent); }
         .balance-card.api::before { background: linear-gradient(90deg, #38bdf8, transparent); }
         .balance-title { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; }
         .balance-value { font-size: 18px; font-weight: 800; margin-top: 4px; color: #34d399; }
         .balance-value.api { color: #38bdf8; }
 
-        /* ==================== CARD & FORM ==================== */
+        /* ==================== TAB SYSTEM & CARD ==================== */
         .card { 
             background: #0f172a; 
             border-radius: 20px; 
@@ -124,114 +102,74 @@
             box-shadow: 0 12px 32px rgba(0,0,0,0.4); 
         }
 
-        h3 { margin-bottom: 16px; font-size: 16px; color: #f8fafc; display: flex; align-items: center; gap: 8px; }
+        .main-tabs { display: flex; background: #050811; padding: 5px; border-radius: 14px; margin-bottom: 20px; gap: 6px; }
+        .tab-item {
+            flex: 1; text-align: center; padding: 10px 0; border-radius: 10px; font-size: 13px; font-weight: 700;
+            color: #64748b; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .tab-item.active { background: #1e293b; color: #38bdf8; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
+
+        .tab-content { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.3s ease, transform 0.3s ease; }
+        .tab-content.active { display: block; opacity: 1; transform: translateY(0); }
+
         .form-group { margin-bottom: 14px; }
         label { display: block; font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; }
-        
         select, input { 
-            width: 100%; 
-            padding: 12px 14px; 
-            border-radius: 12px; 
-            border: 1px solid #1e293b; 
-            background: #070a12; 
-            color: #fff; 
-            font-size: 13px; 
-            outline: none; 
-            transition: all 0.2s;
+            width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #1e293b; background: #070a12; color: #fff; font-size: 13px; outline: none; transition: all 0.25s;
         }
-        select:focus, input:focus {
-            border-color: #38bdf8;
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
-        }
+        select:focus, input:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15); }
 
-        .total-box { 
-            background: rgba(7, 10, 18, 0.7); 
-            border: 1px dashed rgba(52, 211, 153, 0.3); 
-            padding: 14px; 
-            border-radius: 14px; 
-            text-align: center; 
-            margin: 18px 0; 
-        }
+        .total-box { background: rgba(7, 10, 18, 0.7); border: 1px dashed rgba(52, 211, 153, 0.3); padding: 14px; border-radius: 14px; text-align: center; margin: 18px 0; }
         .total-price { font-size: 22px; font-weight: 800; color: #34d399; margin-top: 4px; }
 
-        /* Nút Tạo Đơn Hàng Ngay - Thiết kế mới */
         button.btn-submit { 
-            width: 100%; 
-            padding: 14px; 
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
-            border: none; 
-            border-radius: 12px; 
-            color: #fff; 
-            font-weight: 700; 
-            font-size: 15px; 
-            cursor: pointer; 
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            width: 100%; padding: 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; border-radius: 12px; color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35); transition: all 0.25s ease; display: flex; align-items: center; justify-content: center; gap: 8px;
         }
         button.btn-submit:active { transform: scale(0.98); }
 
-        /* ==================== MODAL POPUP ==================== */
+        /* BẢNG LỊCH SỬ ĐƠN HÀNG */
+        .history-table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #1e293b; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 12px; font-size: 12px; border-bottom: 1px solid #1e293b; white-space: nowrap; }
+        th { background: #070a12; color: #38bdf8; font-weight: 700; }
+        td { color: #cbd5e1; }
+        .status-badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .status-completed { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-pending { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+        /* ==================== MODAL & ANIMATED CHECKMARK ==================== */
         .modal { 
-            display: none; 
-            position: fixed; 
-            inset: 0; 
-            background: rgba(3, 7, 18, 0.85); 
-            backdrop-filter: blur(12px); 
-            -webkit-backdrop-filter: blur(12px);
-            justify-content: center; 
-            align-items: center; 
-            z-index: 1000; 
+            display: none; position: fixed; inset: 0; background: rgba(3, 7, 18, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.3s ease;
         }
+        .modal.show { opacity: 1; }
 
         .modal-content { 
-            background: #0f172a; 
-            padding: 28px 24px; 
-            border-radius: 22px; 
-            width: 90%; 
-            max-width: 360px; 
-            position: relative; 
-            border: 1px solid rgba(56, 189, 248, 0.2); 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6); 
+            background: #0f172a; padding: 28px 24px; border-radius: 22px; width: 90%; max-width: 360px; position: relative; border: 1px solid rgba(56, 189, 248, 0.2); box-shadow: 0 20px 50px rgba(0,0,0,0.6); transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+        .modal.show .modal-content { transform: scale(1); }
 
-        .close-modal { 
-            position: absolute; 
-            right: 16px; 
-            top: 16px; 
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px; 
-            color: #94a3b8; 
-            cursor: pointer; 
+        .close-modal { position: absolute; right: 16px; top: 16px; width: 30px; height: 30px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #94a3b8; cursor: pointer; }
+
+        /* POPUP SUCCESS / LOADING */
+        .status-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 10px; }
+        
+        .spinner { 
+            width: 52px; height: 52px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #38bdf8; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; transition: all 0.3s ease;
         }
-
-        .login-header { text-align: center; margin-bottom: 20px; }
-        .login-icon-box {
-            width: 54px; height: 54px;
-            background: rgba(56, 189, 248, 0.12);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 16px;
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 12px;
-            color: #38bdf8; font-size: 22px;
-        }
-
-        .loading-content { text-align: center; padding: 30px 20px; }
-        .spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #10b981; border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 18px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        #alert { display: none; padding: 12px; border-radius: 10px; margin-top: 14px; font-size: 13px; font-weight: 600; text-align: center; }
-        .success { background: rgba(6, 78, 59, 0.8); color: #6ee7b7; border: 1px solid #10b981; }
-        .error { background: rgba(127, 29, 29, 0.8); color: #fca5a5; border: 1px solid #ef4444; }
+        /* Dấu Tích V Hoạt Hình */
+        .success-checkmark { display: none; width: 60px; height: 60px; margin-bottom: 16px; }
+        .check-icon { width: 60px; height: 60px; border-radius: 50%; stroke-width: 3; stroke: #10b981; stroke-miterlimit: 10; box-shadow: inset 0px 0px 0px #10b981; animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both; }
+        .check-icon .circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 3; stroke-miterlimit: 10; stroke: #10b981; fill: none; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
+        .check-icon .check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards; }
+
+        @keyframes stroke { 100% { stroke-dashoffset: 0; } }
+        @keyframes scale { 0%, 100% { transform: none; } 50% { transform: scale3d(1.1, 1.1, 1); } }
+        @keyframes fill { 100% { box-shadow: inset 0px 0px 0px 30px rgba(16, 185, 129, 0.1); } }
+
+        .status-text { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px; text-align: center; }
+        .status-subtext { font-size: 12px; color: #fbbf24; text-align: center; }
     </style>
 </head>
 <body>
@@ -257,41 +195,67 @@
         </div>
     </div>
 
-    <!-- FORM ĐẶT ĐƠN TIKTOK -->
+    <!-- MAIN CARD VỚI TAB SYSTEM -->
     <div class="card">
-        <h3><i class="fa-solid fa-cart-shopping" style="color: #10b981;"></i> Đặt Đơn TikTok Tự Động</h3>
-        <form id="orderForm">
-            <div class="form-group">
-                <label>Phân loại dịch vụ:</label>
-                <select id="categorySelect" onchange="filterServices()"></select>
-            </div>
+        <div class="main-tabs">
+            <div class="tab-item active" onclick="switchMainTab('orderTab', this)"><i class="fa-solid fa-cart-shopping"></i> Đặt Đơn</div>
+            <div class="tab-item" onclick="switchMainTab('historyTab', this)"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Đơn</div>
+        </div>
 
-            <div class="form-group">
-                <label>Dịch vụ cụ thể:</label>
-                <select id="serviceSelect" onchange="updateDetails()"></select>
-            </div>
+        <!-- TAB 1: FORM ĐẶT ĐƠN -->
+        <div class="tab-content active" id="orderTab">
+            <form id="orderForm">
+                <div class="form-group">
+                    <label>Phân loại dịch vụ:</label>
+                    <select id="categorySelect" onchange="filterServices()"></select>
+                </div>
 
-            <div class="form-group">
-                <label>Link Video / Profile TikTok:</label>
-                <input type="url" id="link" placeholder="https://www.tiktok.com/@..." required>
-            </div>
+                <div class="form-group">
+                    <label>Dịch vụ cụ thể:</label>
+                    <select id="serviceSelect" onchange="updateDetails()"></select>
+                </div>
 
-            <div class="form-group">
-                <label>Số lượng:</label>
-                <input type="number" id="quantity" value="1000" oninput="calculateTotal()" required>
-                <small id="limitHint" style="color: #64748b; font-size: 11px; margin-top: 4px; display: block;"></small>
-            </div>
+                <div class="form-group">
+                    <label>Link Video / Profile TikTok:</label>
+                    <input type="url" id="link" placeholder="https://www.tiktok.com/@..." required>
+                </div>
 
-            <div class="total-box">
-                <span style="font-size: 12px; color: #94a3b8;">Tổng tiền cần thanh toán:</span>
-                <div class="total-price" id="totalPrice">0 đ</div>
-            </div>
+                <div class="form-group">
+                    <label>Số lượng:</label>
+                    <input type="number" id="quantity" value="1000" oninput="calculateTotal()" required>
+                    <small id="limitHint" style="color: #64748b; font-size: 11px; margin-top: 4px; display: block;"></small>
+                </div>
 
-            <button type="submit" class="btn-submit" id="orderBtn">
-                <i class="fa-solid fa-bolt"></i> Tạo Đơn Hàng Ngay
-            </button>
-        </form>
-        <div id="alert"></div>
+                <div class="total-box">
+                    <span style="font-size: 12px; color: #94a3b8;">Tổng tiền cần thanh toán:</span>
+                    <div class="total-price" id="totalPrice">0 đ</div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="orderBtn">
+                    <i class="fa-solid fa-bolt"></i> Tạo Đơn Hàng Ngay
+                </button>
+            </form>
+        </div>
+
+        <!-- TAB 2: LỊCH SỬ ĐƠN HÀNG -->
+        <div class="tab-content" id="historyTab">
+            <div class="history-table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã Đơn</th>
+                            <th>Dịch Vụ</th>
+                            <th>S.Lượng</th>
+                            <th>Tổng Tiền</th>
+                            <th>Trạng Thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr><td colspan="5" style="text-align: center; color: #64748b; padding: 20px;">Đang tải...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -299,9 +263,11 @@
 <div class="modal" id="loginModal">
     <div class="modal-content">
         <div class="close-modal" onclick="closeLoginModal()"><i class="fa-solid fa-xmark"></i></div>
-        <div class="login-header">
-            <div class="login-icon-box"><i class="fa-solid fa-shield-halved"></i></div>
-            <h3 style="justify-content: center; margin-bottom: 2px;">Đăng Nhập</h3>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div style="width: 54px; height: 54px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #38bdf8; font-size: 22px;">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h3 style="font-size: 16px; margin-bottom: 2px;">Đăng Nhập</h3>
             <p style="font-size: 12px; color: #64748b;">Nhập tài khoản để tiếp tục</p>
         </div>
         <form id="loginForm">
@@ -320,12 +286,24 @@
     </div>
 </div>
 
-<!-- POPUP LOADING -->
-<div class="modal" id="loadingModal">
-    <div class="modal-content loading-content">
-        <div class="spinner"></div>
-        <div style="font-size: 16px; font-weight: 700; color: #fff;">Hiện đang đặt hàng...</div>
-        <div style="font-size: 12px; color: #fbbf24; margin-top: 6px;">Vui lòng không tắt trang web</div>
+<!-- POPUP TRẠNG THÁI (LOADING & SUCCESS TICK) -->
+<div class="modal" id="statusModal">
+    <div class="modal-content">
+        <div class="status-container">
+            <!-- Spinner Vòng Xoay -->
+            <div class="spinner" id="modalSpinner"></div>
+
+            <!-- Dấu Tích Xanh V -->
+            <div class="success-checkmark" id="modalCheckmark">
+                <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                    <circle class="circle" cx="26" cy="26" r="25" fill="none"/>
+                    <path class="check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </svg>
+            </div>
+
+            <div class="status-text" id="statusTitle">Đang xử lý đơn hàng...</div>
+            <div class="status-subtext" id="statusSubtitle">Vui lòng không đóng trang web</div>
+        </div>
     </div>
 </div>
 
@@ -342,21 +320,67 @@
         return decimalPart.length > 0 ? `${formattedInteger},${decimalPart} đ` : `${formattedInteger} đ`;
     }
 
-    function openLoginModal() { document.getElementById('loginModal').style.display = 'flex'; }
-    function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
-    function showLoading() { document.getElementById('loadingModal').style.display = 'flex'; }
-    function hideLoading() { document.getElementById('loadingModal').style.display = 'none'; }
+    /* Hiệu ứng chuyển Tab mượt mà */
+    function switchMainTab(tabId, element) {
+        document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        
+        element.classList.add('active');
+        const targetTab = document.getElementById(tabId);
+        targetTab.classList.add('active');
+
+        if(tabId === 'historyTab') {
+            loadOrderHistory();
+        }
+    }
+
+    /* Đóng/Mở Modal Mượt */
+    function openModal(id) {
+        const modal = document.getElementById(id);
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('show'), 10);
+    }
+
+    function closeModal(id) {
+        const modal = document.getElementById(id);
+        modal.classList.remove('show');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
+
+    function openLoginModal() { openModal('loginModal'); }
+    function closeLoginModal() { closeModal('loginModal'); }
+
+    /* Hiển thị Loading và Chuyển Dấu Tích V */
+    function showLoadingStatus() {
+        document.getElementById('modalSpinner').style.display = 'block';
+        document.getElementById('modalCheckmark').style.display = 'none';
+        document.getElementById('statusTitle').innerText = 'Hiện đang đặt hàng...';
+        document.getElementById('statusTitle').style.color = '#ffffff';
+        document.getElementById('statusSubtitle').innerText = 'Vui lòng không đóng trang web';
+        document.getElementById('statusSubtitle').style.color = '#fbbf24';
+        openModal('statusModal');
+    }
+
+    function showSuccessStatus(orderId) {
+        document.getElementById('modalSpinner').style.display = 'none';
+        document.getElementById('modalCheckmark').style.display = 'block';
+        document.getElementById('statusTitle').innerText = 'Tạo Đơn Thành Công!';
+        document.getElementById('statusTitle').style.color = '#34d399';
+        document.getElementById('statusSubtitle').innerText = `Mã đơn hàng: #${orderId}`;
+        document.getElementById('statusSubtitle').style.color = '#94a3b8';
+
+        /* Tự động đóng Modal sau 2.2 giây */
+        setTimeout(() => {
+            closeModal('statusModal');
+        }, 2200);
+    }
 
     function updateAuthUI() {
         const authArea = document.getElementById('authArea');
         const balanceArea = document.getElementById('balanceArea');
 
         if (currentUser) {
-            let adminBtn = '';
-            if (currentUser.role === 'root_admin') {
-                adminBtn = `<a href="/admin.html" class="btn btn-admin"><i class="fa-solid fa-user-gear"></i> Admin</a>`;
-            }
-
+            let adminBtn = currentUser.role === 'root_admin' ? `<a href="/admin.html" class="btn btn-admin"><i class="fa-solid fa-user-gear"></i> Admin</a>` : '';
             authArea.innerHTML = `
                 ${adminBtn}
                 <div class="user-info-tag"><i class="fa-solid fa-user"></i> ${currentUser.username}</div>
@@ -432,6 +456,39 @@
         }
     }
 
+    /* Tải Lịch Sử Đơn Hàng */
+    async function loadOrderHistory() {
+        if (!currentUser) {
+            document.getElementById('historyTableBody').innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ef4444;">Vui lòng đăng nhập để xem lịch sử!</td></tr>`;
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/user/orders?username=${currentUser.username}`);
+            const data = await res.json();
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+
+            if (data.status === 'success' && data.data.length > 0) {
+                data.data.forEach(order => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><b>#${order.id || order.orderId}</b></td>
+                            <td>${order.serviceName || order.service}</td>
+                            <td>${Number(order.quantity).toLocaleString('vi-VN')}</td>
+                            <td style="color:#34d399; font-weight:700;">${formatMoney(order.price)}</td>
+                            <td><span class="status-badge status-completed">Thành công</span></td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b;">Bạn chưa có đơn hàng nào</td></tr>`;
+            }
+        } catch (e) {
+            document.getElementById('historyTableBody').innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ef4444;">Không thể tải lịch sử đơn</td></tr>`;
+        }
+    }
+
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const res = await fetch('/api/login', {
@@ -456,9 +513,9 @@
     document.getElementById('orderForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!currentUser) { alert("Vui lòng đăng nhập trước!"); openLoginModal(); return; }
-        const alertBox = document.getElementById('alert');
-        alertBox.style.display = 'none';
-        showLoading();
+        
+        showLoadingStatus();
+
         try {
             const serviceId = document.getElementById('serviceSelect').value;
             const qty = document.getElementById('quantity').value;
@@ -478,21 +535,16 @@
             });
 
             const data = await res.json();
-            hideLoading();
-            alertBox.style.display = 'block';
             if (res.ok && data.status === 'success') {
-                alertBox.className = 'success';
-                alertBox.innerText = `Đặt đơn thành công! Mã đơn: ${data.orderId}`;
+                showSuccessStatus(data.orderId);
                 loadBalance();
             } else {
-                alertBox.className = 'error';
-                alertBox.innerText = `Lỗi: ${data.message || 'Không thể tạo đơn'}`;
+                closeModal('statusModal');
+                alert(`Lỗi: ${data.message || 'Không thể tạo đơn'}`);
             }
         } catch (error) {
-            hideLoading();
-            alertBox.style.display = 'block';
-            alertBox.className = 'error';
-            alertBox.innerText = "Lỗi kết nối máy chủ";
+            closeModal('statusModal');
+            alert("Lỗi kết nối tới máy chủ");
         }
     });
 
