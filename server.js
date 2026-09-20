@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'views')));
 
-// Lấy thông tin cấu hình từ biến môi trường
+// Cấu hình API gốc SMM Panel
 const SMM_API_URL = process.env.API_URL || 'https://dichvu.c25tool.net/api/v2';
 const SMM_API_KEY = process.env.API_KEY || '';
 
@@ -53,7 +53,7 @@ app.post('/api/login', (req, res) => {
     }
 });
 
-// 2. API Lấy số dư (Đọc từ API gốc dichvu.c25tool.net và tự động tính toán cho Admin)
+// 2. API Lấy số dư (Admin = Số dư API thực - Tổng tiền sub-user)
 app.get('/api/user/balance', async (req, res) => {
     const { username } = req.query;
     const db = readDB();
@@ -78,12 +78,10 @@ app.get('/api/user/balance', async (req, res) => {
         }
     } catch (error) {
         console.error("Lỗi gọi API số dư gốc:", error.message);
-        realApiBalance = 0;
     }
 
     let usableBalance = user.balance;
 
-    // Nếu là root_admin: Số dư sử dụng = Tổng tiền từ API - Tổng số dư đã cấp cho các sub-user
     if (user.role === 'root_admin') {
         const totalSubUserBalance = db.users
             .filter(u => u.role !== 'root_admin')
@@ -100,7 +98,7 @@ app.get('/api/user/balance', async (req, res) => {
     });
 });
 
-// 3. API Lấy danh sách dịch vụ từ nguồn gốc
+// 3. API Lấy danh sách dịch vụ từ API gốc
 app.get('/api/services', async (req, res) => {
     try {
         const response = await axios.post(SMM_API_URL, new URLSearchParams({
@@ -124,16 +122,6 @@ app.post('/api/order', async (req, res) => {
     const user = db.users.find(u => u.username.toLowerCase() === String(username).toLowerCase());
 
     if (!user) return res.status(404).json({ status: 'error', message: 'Tài khoản không tồn tại' });
-
-    // Tính lại số dư khả dụng của user/admin trước khi check tiền
-    let currentUsableBalance = user.balance;
-    if (user.role === 'root_admin') {
-        const totalSubUserBalance = db.users
-            .filter(u => u.role !== 'root_admin')
-            .reduce((sum, u) => sum + (Number(u.balance) || 0), 0);
-        // Có thể gọi trực tiếp API lấy real balance nếu cần, ở đây check tạm theo số nội bộ hoặc logic hiện tại
-        currentUsableBalance = user.balance; // Hoặc check trực tiếp
-    }
 
     if (user.role !== 'root_admin' && user.balance < price) {
         return res.status(400).json({ status: 'error', message: 'Số dư của bạn không đủ để tạo đơn hàng này!' });
@@ -180,66 +168,49 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 5. API Admin tạo tài khoản user mới
+// 5. API Quản lý Admin: Tạo user, chỉnh sửa số dư, xem danh sách
 app.post('/api/admin/create-user', (req, res) => {
     const { adminUsername, username, password } = req.body;
     const db = readDB();
-
     const admin = db.users.find(u => u.username.toLowerCase() === String(adminUsername).toLowerCase());
+    
     if (!admin || admin.role !== 'root_admin') {
-        return res.status(403).json({ status: 'error', message: 'Bạn không có quyền thực hiện thao tác này!' });
+        return res.status(403).json({ status: 'error', message: 'Không có quyền thực hiện!' });
     }
 
     if (!username || !password) {
-        return res.status(400).json({ status: 'error', message: 'Vui lòng điền đầy đủ thông tin!' });
+        return res.status(400).json({ status: 'error', message: 'Vui lòng nhập đầy đủ thông tin!' });
     }
 
-    const existingUser = db.users.find(u => u.username.toLowerCase() === username.toLowerCase());
-    if (existingUser) {
-        return res.status(400).json({ status: 'error', message: 'Tên tài khoản này đã tồn tại!' });
+    if (db.users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+        return res.status(400).json({ status: 'error', message: 'Tên tài khoản đã tồn tại!' });
     }
 
-    const newUser = {
-        username: username.trim(),
-        password: password.trim(),
-        role: 'user',
-        balance: 0,
-        status: 'ON'
-    };
-
-    db.users.push(newUser);
+    db.users.push({ username: username.trim(), password: password.trim(), role: 'user', balance: 0, status: 'ON' });
     writeDB(db);
-
-    res.json({ status: 'success', message: `Đã tạo thành công tài khoản: ${username}` });
+    res.json({ status: 'success', message: 'Tạo tài khoản thành công' });
 });
 
-// 6. API Admin cộng trừ tiền
 app.post('/api/admin/adjust-balance', (req, res) => {
     const { adminUsername, targetUsername, amount, type } = req.body;
     const db = readDB();
-
     const admin = db.users.find(u => u.username.toLowerCase() === String(adminUsername).toLowerCase());
+    
     if (!admin || admin.role !== 'root_admin') {
         return res.status(403).json({ status: 'error', message: 'Không có quyền' });
     }
 
     const targetUser = db.users.find(u => u.username.toLowerCase() === String(targetUsername).toLowerCase());
-    if (!targetUser) {
-        return res.status(404).json({ status: 'error', message: 'Không tìm thấy tài khoản thành viên!' });
-    }
+    if (!targetUser) return res.status(404).json({ status: 'error', message: 'Không tìm thấy user' });
 
-    const numAmount = Number(amount);
-    if (type === 'add') {
-        targetUser.balance += numAmount;
-    } else if (type === 'subtract') {
-        targetUser.balance = Math.max(0, targetUser.balance - numAmount);
-    }
+    const num = Number(amount);
+    if (type === 'add') targetUser.balance += num;
+    else if (type === 'subtract') targetUser.balance = Math.max(0, targetUser.balance - num);
 
     writeDB(db);
-    res.json({ status: 'success', message: 'Cập nhật số dư thành công!' });
+    res.json({ status: 'success', message: 'Cập nhật số dư thành công' });
 });
 
-// 7. API Lấy danh sách users cho admin
 app.get('/api/admin/users', (req, res) => {
     const { adminUsername } = req.query;
     const db = readDB();
@@ -248,14 +219,10 @@ app.get('/api/admin/users', (req, res) => {
     res.json({ status: 'success', data: db.users });
 });
 
-// 8. API Lấy danh sách đơn hàng của user
 app.get('/api/user/orders', (req, res) => {
     const { username } = req.query;
     const db = readDB();
-    const userOrders = db.orders.filter(o => o.username.toLowerCase() === String(username).toLowerCase());
-    res.json({ status: 'success', data: userOrders.reverse() });
+    res.json({ status: 'success', data: db.orders.filter(o => o.username.toLowerCase() === String(username).toLowerCase()).reverse() });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server đang chạy tại cổng ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server đang chạy tại cổng ${PORT}`));
