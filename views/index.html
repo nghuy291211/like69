@@ -6,53 +6,229 @@
     <title>Hệ Thống Dịch Vụ TikTok Auto</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background: #090d16; color: #e2e8f0; padding: 15px; }
-        .container { max-width: 650px; margin: 0 auto; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif; }
+        body { background: #070a12; color: #f1f5f9; padding: 15px; }
+        .container { max-width: 680px; margin: 0 auto; }
 
-        .navbar { display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); padding: 12px 18px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 20px; }
-        .logo { font-size: 17px; font-weight: 700; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
-        .btn { border: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
-        .btn-login { background: #10b981; color: #fff; }
-        .btn-logout { background: #ef4444; color: #fff; }
+        /* ==================== 1. MENU NAVBAR CHÍNH ==================== */
+        .navbar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background: rgba(15, 23, 42, 0.75); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
+            padding: 14px 20px; 
+            border-radius: 18px; 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            margin-bottom: 22px; 
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+        }
 
-        .balance-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .balance-card { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); padding: 15px; border-radius: 12px; }
-        .balance-title { font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
-        .balance-value { font-size: 18px; font-weight: 700; margin-top: 4px; color: #10b981; }
+        .logo { 
+            font-size: 19px; 
+            font-weight: 800; 
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            letter-spacing: -0.5px;
+        }
+
+        .logo i {
+            -webkit-text-fill-color: initial;
+            color: #38bdf8;
+            font-size: 20px;
+            filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));
+        }
+
+        /* Nút bấm trên Menu */
+        .btn { 
+            border: none; 
+            padding: 9px 16px; 
+            border-radius: 10px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+            font-size: 13px; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
+
+        .btn-login { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+            color: #fff; 
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+        }
+        .btn-login:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5); 
+        }
+
+        .btn-logout { 
+            background: rgba(239, 68, 68, 0.15); 
+            color: #f87171; 
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .btn-logout:hover { 
+            background: #ef4444; 
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+        }
+
+        .user-info-tag {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #38bdf8;
+            margin-right: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ==================== 2. KHU VỰC SỐ DƯ ==================== */
+        .balance-container { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 22px; }
+        .balance-card { 
+            background: rgba(15, 23, 42, 0.6); 
+            border: 1px solid rgba(255, 255, 255, 0.06); 
+            padding: 16px; 
+            border-radius: 16px; 
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, #10b981, transparent);
+        }
+        .balance-card.api::before { background: linear-gradient(90deg, #38bdf8, transparent); }
+        .balance-title { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        .balance-value { font-size: 19px; font-weight: 800; margin-top: 6px; color: #34d399; }
         .balance-value.api { color: #38bdf8; }
 
-        .card { background: #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
-        h3 { margin-bottom: 16px; font-size: 16px; color: #f8fafc; display: flex; align-items: center; gap: 8px; }
-        .form-group { margin-bottom: 14px; }
-        label { display: block; font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; }
-        select, input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 14px; outline: none; }
+        /* ==================== 3. KHU VỰC MENU ADMIN (TAB CONTROL) ==================== */
+        .card { 
+            background: #0f172a; 
+            border-radius: 20px; 
+            padding: 24px; 
+            margin-bottom: 22px; 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5); 
+        }
 
-        .total-box { background: #0f172a; border: 1px dashed #334155; padding: 12px; border-radius: 8px; text-align: center; margin: 15px 0; }
-        .total-price { font-size: 20px; font-weight: bold; color: #10b981; }
+        .admin-nav { 
+            display: flex; 
+            background: #070a12; 
+            padding: 5px; 
+            border-radius: 14px; 
+            margin-bottom: 20px; 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 4px;
+        }
 
-        button.btn-submit { width: 100%; padding: 12px; background: #10b981; border: none; border-radius: 8px; color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; }
-        
-        .admin-nav { display: flex; gap: 8px; margin-bottom: 15px; }
-        .admin-nav .btn-tab { flex: 1; padding: 10px; background: #0f172a; color: #94a3b8; border: 1px solid #334155; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; text-align: center; }
-        .admin-nav .btn-tab.active { background: #0284c7; color: #fff; border-color: #38bdf8; }
+        .admin-nav .btn-tab { 
+            flex: 1; 
+            padding: 11px 8px; 
+            color: #94a3b8; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 12px; 
+            text-align: center; 
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: 1px solid transparent;
+        }
+
+        .admin-nav .btn-tab:hover {
+            color: #f1f5f9;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .admin-nav .btn-tab.active { 
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(2, 132, 199, 0.2) 100%);
+            color: #38bdf8; 
+            border-color: rgba(56, 189, 248, 0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-weight: 700;
+        }
+
+        /* FORM & INPUT */
+        h3 { margin-bottom: 18px; font-size: 16px; color: #f8fafc; display: flex; align-items: center; gap: 10px; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 8px; }
+        select, input { 
+            width: 100%; 
+            padding: 12px 14px; 
+            border-radius: 10px; 
+            border: 1px solid #1e293b; 
+            background: #070a12; 
+            color: #fff; 
+            font-size: 14px; 
+            outline: none; 
+            transition: 0.2s;
+        }
+        select:focus, input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        }
+
+        .total-box { background: rgba(7, 10, 18, 0.6); border: 1px dashed #334155; padding: 14px; border-radius: 12px; text-align: center; margin: 18px 0; }
+        .total-price { font-size: 22px; font-weight: 800; color: #34d399; margin-top: 4px; }
+
+        button.btn-submit { 
+            width: 100%; 
+            padding: 13px; 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+            border: none; 
+            border-radius: 10px; 
+            color: #fff; 
+            font-weight: 700; 
+            font-size: 15px; 
+            cursor: pointer; 
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+            transition: 0.2s;
+        }
+        button.btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45); }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { text-align: left; padding: 10px; border-bottom: 1px solid #334155; font-size: 13px; }
-        th { background: #0f172a; color: #38bdf8; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #1e293b; font-size: 13px; }
+        th { background: #070a12; color: #38bdf8; font-weight: 700; }
 
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: #1e293b; padding: 25px; border-radius: 16px; width: 90%; max-width: 380px; position: relative; }
-        .close-modal { position: absolute; right: 15px; top: 15px; font-size: 18px; color: #94a3b8; cursor: pointer; }
+        /* MODAL POPUP CƠ BẢN */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: #0f172a; padding: 28px; border-radius: 20px; width: 90%; max-width: 390px; position: relative; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+        .close-modal { position: absolute; right: 18px; top: 18px; font-size: 18px; color: #64748b; cursor: pointer; transition: 0.2s; }
+        .close-modal:hover { color: #fff; }
 
-        #alert { display: none; padding: 10px; border-radius: 6px; margin-top: 12px; font-size: 13px; }
-        .success { background: #064e3b; color: #6ee7b7; }
-        .error { background: #7f1d1d; color: #fca5a5; }
+        /* POPUP ĐANG XỬ LÝ (LOADING) */
+        .loading-content { text-align: center; padding: 35px 20px; }
+        .spinner { width: 54px; height: 54px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #10b981; border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 22px; filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.4)); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-title { font-size: 17px; font-weight: 700; color: #f8fafc; margin-bottom: 8px; }
+        .loading-warning { font-size: 13px; color: #fbbf24; font-weight: 600; background: rgba(251, 191, 36, 0.1); padding: 8px 12px; border-radius: 8px; display: inline-block; }
+
+        #alert { display: none; padding: 12px; border-radius: 10px; margin-top: 14px; font-size: 13px; font-weight: 600; }
+        .success { background: rgba(6, 78, 59, 0.8); color: #6ee7b7; border: 1px solid #10b981; }
+        .error { background: rgba(127, 29, 29, 0.8); color: #fca5a5; border: 1px solid #ef4444; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <!-- NAVBAR CHÍNH -->
     <div class="navbar">
         <div class="logo"><i class="fa-brands fa-tiktok"></i> TikTok Auto</div>
         <div id="authArea">
@@ -60,17 +236,19 @@
         </div>
     </div>
 
+    <!-- SỐ DƯ -->
     <div class="balance-container" id="balanceArea" style="display: none;">
         <div class="balance-card">
-            <div class="balance-title">Số Dư Sử Dụng</div>
+            <div class="balance-title"><i class="fa-solid fa-wallet" style="margin-right: 4px;"></i> Số Dư Sử Dụng</div>
             <div class="balance-value" id="usableBalance">0 đ</div>
         </div>
-        <div class="balance-card" id="apiBalanceCard" style="display: none;">
-            <div class="balance-title">Số Dư API Thực</div>
+        <div class="balance-card api" id="apiBalanceCard" style="display: none;">
+            <div class="balance-title"><i class="fa-solid fa-server" style="margin-right: 4px;"></i> Số Dư API Thực</div>
             <div class="balance-value api" id="apiRealBalance">0 đ</div>
         </div>
     </div>
 
+    <!-- FORM ĐẶT ĐƠN -->
     <div class="card">
         <h3><i class="fa-solid fa-cart-shopping" style="color: #10b981;"></i> Đặt Đơn TikTok Tự Động</h3>
         <form id="orderForm">
@@ -92,25 +270,28 @@
             <div class="form-group">
                 <label>Số lượng:</label>
                 <input type="number" id="quantity" value="1000" oninput="calculateTotal()" required>
-                <small id="limitHint" style="color: #64748b; font-size: 11px;"></small>
+                <small id="limitHint" style="color: #64748b; font-size: 11px; margin-top: 4px; display: block;"></small>
             </div>
 
             <div class="total-box">
-                Tổng tiền cần thanh toán: <div class="total-price" id="totalPrice">0 đ</div>
+                <span style="font-size: 13px; color: #94a3b8;">Tổng tiền cần thanh toán:</span>
+                <div class="total-price" id="totalPrice">0 đ</div>
             </div>
 
-            <button type="submit" class="btn-submit">Tạo Đơn Hàng Ngay</button>
+            <button type="submit" class="btn-submit" id="orderBtn">Tạo Đơn Hàng Ngay</button>
         </form>
         <div id="alert"></div>
     </div>
 
-    <div class="card" id="adminPanel" style="display: none; border: 1px solid #38bdf8;">
+    <!-- KHU VỰC ADMIN -->
+    <div class="card" id="adminPanel" style="display: none; border: 1px solid rgba(56, 189, 248, 0.3);">
         <h3 style="color: #38bdf8;"><i class="fa-solid fa-user-gear"></i> Quản Lý Tài Khoản (Admin Gốc)</h3>
         
+        <!-- NAV TABS DẠNG SEGMENTED CONTROL MỚI -->
         <div class="admin-nav">
             <div class="btn-tab active" id="tabCreateBtn" onclick="switchAdminTab('create')"><i class="fa-solid fa-user-plus"></i> Tạo Acc</div>
             <div class="btn-tab" id="tabBalanceBtn" onclick="switchAdminTab('balance')"><i class="fa-solid fa-coins"></i> Cài Số Dư</div>
-            <div class="btn-tab" id="tabListBtn" onclick="switchAdminTab('list')"><i class="fa-solid fa-list"></i> Danh Sách Acc</div>
+            <div class="btn-tab" id="tabListBtn" onclick="switchAdminTab('list')"><i class="fa-solid fa-list"></i> Danh Sách</div>
         </div>
 
         <form id="createAccForm">
@@ -126,7 +307,7 @@
                 <label>Số dư ban đầu (VNĐ):</label>
                 <input type="number" id="initialBalance" value="0">
             </div>
-            <button type="submit" class="btn-submit" style="background: #0284c7;">Tạo Tài Khoản Con</button>
+            <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);">Tạo Tài Khoản Con</button>
         </form>
 
         <form id="updateBalanceForm" style="display: none;">
@@ -145,7 +326,7 @@
                 <label>Số tiền (VNĐ):</label>
                 <input type="number" id="amount" placeholder="Nhập số tiền..." required>
             </div>
-            <button type="submit" class="btn-submit" style="background: #10b981;">Cập Nhật Số Dư</button>
+            <button type="submit" class="btn-submit">Cập Nhật Số Dư</button>
         </form>
 
         <div id="userListSection" style="display: none;">
@@ -163,6 +344,7 @@
     </div>
 </div>
 
+<!-- MODAL POPUP ĐĂNG NHẬP -->
 <div class="modal" id="loginModal">
     <div class="modal-content">
         <i class="fa-solid fa-xmark close-modal" onclick="closeLoginModal()"></i>
@@ -181,11 +363,19 @@
     </div>
 </div>
 
+<!-- POPUP XOAY VÒNG ĐANG ĐẶT HÀNG -->
+<div class="modal" id="loadingModal">
+    <div class="modal-content loading-content">
+        <div class="spinner"></div>
+        <div class="loading-title">Hiện đang đặt hàng...</div>
+        <div class="loading-warning"><i class="fa-solid fa-triangle-exclamation"></i> Vui lòng không tắt web tránh mất tiền</div>
+    </div>
+</div>
+
 <script>
     let currentUser = JSON.parse(localStorage.getItem('user'));
     let allServices = [];
 
-    // Định dạng lấy toàn bộ số nguyên + tối đa 3 số thập phân sau dấu phẩy
     function formatMoney(amount) {
         if (amount === null || amount === undefined || isNaN(amount)) return '0 đ';
         
@@ -203,6 +393,9 @@
     function openLoginModal() { document.getElementById('loginModal').style.display = 'flex'; }
     function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
 
+    function showLoading() { document.getElementById('loadingModal').style.display = 'flex'; }
+    function hideLoading() { document.getElementById('loadingModal').style.display = 'none'; }
+
     function updateAuthUI() {
         const authArea = document.getElementById('authArea');
         const balanceArea = document.getElementById('balanceArea');
@@ -210,7 +403,7 @@
 
         if (currentUser) {
             authArea.innerHTML = `
-                <span style="font-size: 13px; font-weight: 600; color:#38bdf8; margin-right: 5px;"><i class="fa-solid fa-user"></i> ${currentUser.username}</span>
+                <div class="user-info-tag"><i class="fa-solid fa-user"></i> ${currentUser.username}</div>
                 <button class="btn btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
             `;
             balanceArea.style.display = 'grid';
@@ -388,34 +581,46 @@
             return;
         }
 
-        const serviceId = document.getElementById('serviceSelect').value;
-        const qty = document.getElementById('quantity').value;
-        const service = allServices.find(s => s.service == serviceId);
-        const cost = (qty / 1000) * service.rate;
-
-        const res = await fetch('/api/order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                username: currentUser.username,
-                service: serviceId,
-                link: document.getElementById('link').value,
-                quantity: qty,
-                price: cost
-            })
-        });
-
-        const data = await res.json();
         const alertBox = document.getElementById('alert');
-        alertBox.style.display = 'block';
+        alertBox.style.display = 'none';
 
-        if (res.ok && data.status === 'success') {
-            alertBox.className = 'success';
-            alertBox.innerText = `Đặt đơn thành công! Mã đơn: ${data.orderId}`;
-            loadBalance();
-        } else {
+        showLoading();
+
+        try {
+            const serviceId = document.getElementById('serviceSelect').value;
+            const qty = document.getElementById('quantity').value;
+            const service = allServices.find(s => s.service == serviceId);
+            const cost = (qty / 1000) * service.rate;
+
+            const res = await fetch('/api/order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: currentUser.username,
+                    service: serviceId,
+                    link: document.getElementById('link').value,
+                    quantity: qty,
+                    price: cost
+                })
+            });
+
+            const data = await res.json();
+            hideLoading();
+            alertBox.style.display = 'block';
+
+            if (res.ok && data.status === 'success') {
+                alertBox.className = 'success';
+                alertBox.innerText = `Đặt đơn thành công! Mã đơn: ${data.orderId}`;
+                loadBalance();
+            } else {
+                alertBox.className = 'error';
+                alertBox.innerText = `Lỗi: ${data.message || 'Không thể tạo đơn'} - Vui lòng liên hệ admin!`;
+            }
+        } catch (error) {
+            hideLoading();
+            alertBox.style.display = 'block';
             alertBox.className = 'error';
-            alertBox.innerText = data.message;
+            alertBox.innerText = "Lỗi, vui lòng liên hệ admin";
         }
     });
 
