@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Đặt Đơn TikTok</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; max-width: 600px; }
+        .card { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
+        input, button { margin: 5px 0; padding: 8px; width: 100%; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <h2>Hệ Thống Dịch Vụ TikTok</h2>
+
+    <!-- Form Đăng Nhập -->
+    <div class="card" id="loginBox">
+        <h3>Đăng Nhập</h3>
+        <input type="text" id="loginUser" placeholder="Tên đăng nhập">
+        <input type="password" id="loginPass" placeholder="Mật khẩu">
+        <button onclick="login()">Đăng Nhập</button>
+    </div>
+
+    <!-- Thông Tin Tài Khoản -->
+    <div class="card" id="userBox" style="display:none;">
+        <p>Xin chào: <b id="dispUser"></b> | Số dư: <b id="dispBalance">0</b> VNĐ</p>
+        <button onclick="logout()" style="background:#dc3545;">Đăng Xuất</button>
+    </div>
+
+    <!-- Form Đặt Đơn -->
+    <div class="card">
+        <h3>Đặt Đơn TikTok</h3>
+        <input type="text" id="service" placeholder="Mã ID dịch vụ (VD: 101)">
+        <input type="text" id="link" placeholder="Link hoặc ID bài viết/kênh">
+        <input type="number" id="quantity" placeholder="Số lượng">
+        <button onclick="placeOrder()">Gửi Đơn</button>
+    </div>
+
+    <!-- Form Tra Cứu Tiến Độ -->
+    <div class="card">
+        <h3>Kiểm Tra Tiến Độ</h3>
+        <input type="text" id="checkOrderId" placeholder="Nhập Mã đơn nội bộ">
+        <button onclick="checkStatus()">Kiểm Tra</button>
+        <p id="statusResult"></p>
+    </div>
+
+    <script>
+        let token = localStorage.getItem('token');
+        if (token) showUserUI();
+
+        async function login() {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    username: document.getElementById('loginUser').value,
+                    password: document.getElementById('loginPass').value
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('username', document.getElementById('loginUser').value);
+                localStorage.setItem('balance', data.balance);
+                showUserUI();
+            } else {
+                alert(data.error);
+            }
+        }
+
+        function showUserUI() {
+            document.getElementById('loginBox').style.display = 'none';
+            document.getElementById('userBox').style.display = 'block';
+            document.getElementById('dispUser').innerText = localStorage.getItem('username');
+            document.getElementById('dispBalance').innerText = localStorage.getItem('balance');
+        }
+
+        function logout() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        async function placeOrder() {
+            const res = await fetch('/api/order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                body: JSON.stringify({
+                    service: document.getElementById('service').value,
+                    link: document.getElementById('link').value,
+                    quantity: parseInt(document.getElementById('quantity').value),
+                    pricePerItem: 10 // Đơn giá nội bộ của bạn
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert(`Thành công! Mã đơn của bạn là: ${data.localOrderId}`);
+            } else {
+                alert(data.error);
+            }
+        }
+
+        async function checkStatus() {
+            const id = document.getElementById('checkOrderId').value;
+            const res = await fetch(`/api/order/status/${id}`, {
+                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+            });
+            const data = await res.json();
+            if (res.ok) {
+                document.getElementById('statusResult').innerText = `Trạng thái: ${data.status} | Còn lại: ${data.remains}`;
+            } else {
+                document.getElementById('statusResult').innerText = data.error;
+            }
+        }
+    </script>
+</body>
+</html>
+
