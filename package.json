@@ -1,7 +1,7 @@
 {
-  "name": "smm-order-app",
+  "name": "smm-reseller",
   "version": "1.0.0",
-  "description": "Website dat don hang qua SMM Panel API",
+  "description": "Dịch Vụ Tăng Tương Tác TikTok",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
