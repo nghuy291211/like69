@@ -3,153 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Đặt Đơn TikTok Tự Động</title>
+    <title>Bảng Điều Khiển Dịch Vụ TikTok</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background: #0f172a; color: #f8fafc; padding: 20px; }
-        .container { max-width: 600px; margin: 20px auto; background: #1e293b; padding: 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        h2 { text-align: center; margin-bottom: 20px; color: #38bdf8; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #cbd5e1; }
-        select, input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 14px; }
-        select:focus, input:focus { outline: none; border-color: #38bdf8; }
-        .info-text { font-size: 12px; color: #94a3b8; margin-top: 4px; }
-        .price-calculator { background: #0f172a; padding: 15px; border-radius: 6px; margin-top: 20px; margin-bottom: 20px; border: 1px dashed #38bdf8; font-weight: bold; color: #38bdf8; text-align: center; font-size: 16px; }
-        button { width: 100%; padding: 14px; background: #2563eb; border: none; border-radius: 6px; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; }
-        button:hover { background: #1d4ed8; }
-        button:disabled { background: #64748b; cursor: not-allowed; }
-        #alert { margin-top: 15px; padding: 12px; border-radius: 6px; display: none; font-size: 14px; line-height: 1.4; }
-        .success { background: #064e3b; color: #6ee7b7; border: 1px solid #047857; }
-        .error { background: #7f1d1d; color: #fca5a5; border: 1px solid #b91c1c; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: #090d16; color: #e2e8f0; padding: 20px; }
+        .wrapper { max-width: 650px; margin: 0 auto; }
+        
+        /* Glassmorphism Header & Balance Boxes */
+        .balance-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .balance-card { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); padding: 18px; border-radius: 14px; position: relative; }
+        .balance-card i { position: absolute; right: 15px; top: 18px; font-size: 24px; opacity: 0.3; }
+        .balance-title { font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
+        .balance-value { font-size: 20px; font-weight: 700; margin-top: 6px; color: #10b981; }
+        .balance-value.api { color: #38bdf8; }
+
+        .card { background: #1e293b; border-radius: 16px; padding: 25px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h3 { margin-bottom: 18px; font-size: 18px; color: #f8fafc; display: flex; align-items: center; gap: 10px; }
+
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; }
+        select, input { width: 100%; padding: 13px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 14px; outline: none; }
+        select:focus, input:focus { border-color: #10b981; }
+
+        .total-box { background: #0f172a; border: 1px dashed #334155; padding: 15px; border-radius: 10px; text-align: center; margin: 20px 0; }
+        .total-price { font-size: 22px; font-weight: bold; color: #10b981; }
+
+        button.btn-primary { width: 100%; padding: 14px; background: #10b981; border: none; border-radius: 10px; color: #fff; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.2s; }
+        button.btn-primary:hover { background: #059669; }
+
+        .admin-panel { border: 1px solid #38bdf8; display: none; }
+        #alert { display: none; padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 14px; }
+        .success { background: #064e3b; color: #6ee7b7; }
+        .error { background: #7f1d1d; color: #fca5a5; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>ĐẶT ĐƠN TIKTOK AUTO</h2>
-
-    <form id="orderForm">
-        <div class="form-group">
-            <label>Dịch vụ TikTok (Trực tiếp từ API):</label>
-            <select id="serviceSelect" onchange="updateServiceInfo()"></select>
+<div class="wrapper">
+    <!-- KHU VỰC SỐ DƯ (2 Ô TÍNH THEO YÊU CẦU DÀNH CHO ADMIN) -->
+    <div class="balance-container" id="balanceArea">
+        <div class="balance-card">
+            <i class="fa-solid fa-wallet"></i>
+            <div class="balance-title">Số Dư Sử Dụng</div>
+            <div class="balance-value" id="usableBalance">0 đ</div>
         </div>
-
-        <div class="form-group">
-            <label>Link TikTok (Video hoặc Profile):</label>
-            <input type="url" id="link" placeholder="https://www.tiktok.com/@username/video/..." required>
+        <div class="balance-card" id="apiBalanceCard" style="display:none;">
+            <i class="fa-solid fa-server"></i>
+            <div class="balance-title">Số Dư API Thực</div>
+            <div class="balance-value api" id="apiRealBalance">0 đ</div>
         </div>
+    </div>
 
-        <div class="form-group">
-            <label>Số lượng:</label>
-            <input type="number" id="quantity" value="1000" oninput="calculatePrice()" required>
-            <div class="info-text" id="limitText">Tối thiểu: - | Tối đa: -</div>
-        </div>
+    <!-- CẤU HÌNH ĐẶT ĐƠN -->
+    <div class="card">
+        <h3><i class="fa-brands fa-tiktok" style="color: #25f4ee;"></i> Đặt Đơn TikTok Tự Động</h3>
+        <form id="orderForm">
+            <div class="form-group">
+                <label>Phân loại dịch vụ:</label>
+                <select id="categorySelect" onchange="filterServices()"></select>
+            </div>
 
-        <div class="price-calculator">
-            Thành tiền: <span id="totalPrice">0 đ</span>
-        </div>
+            <div class="form-group">
+                <label>Chọn Dịch vụ cụ thể:</label>
+                <select id="serviceSelect" onchange="updateServiceDetails()"></select>
+            </div>
 
-        <button type="submit" id="btnSubmit">TẠO ĐƠN HÀNG NGAY</button>
-    </form>
+            <div class="form-group">
+                <label>Link Video / Profile TikTok:</label>
+                <input type="url" id="link" placeholder="https://www.tiktok.com/@..." required>
+            </div>
 
-    <div id="alert"></div>
+            <div class="form-group">
+                <label>Số lượng đặt:</label>
+                <input type="number" id="quantity" value="1000" oninput="calculateTotal()" required>
+                <small id="limitHint" style="color: #64748b; font-size: 12px;"></small>
+            </div>
+
+            <div class="total-box">
+                Tổng tiền cần thanh toán: <div class="total-price" id="totalPrice">0 đ</div>
+            </div>
+
+            <button type="submit" class="btn-primary" id="btnOrder">Đặt Hàng Ngay</button>
+        </form>
+
+        <div id="alert"></div>
+    </div>
+
+    <!-- PANEL DÀNH RIÊNG CHO ADMIN GỐC CẤP SỐ DƯ TK CON -->
+    <div class="card admin-panel" id="adminPanel">
+        <h3 style="color: #38bdf8;"><i class="fa-solid fa-user-gear"></i> Quản Lý Tài Khoản Con (Admin Gốc)</h3>
+        <form id="adminUserForm">
+            <div class="form-group">
+                <label>Tên tài khoản con:</label>
+                <input type="text" id="targetUsername" placeholder="Nhập tên user..." required>
+            </div>
+            <div class="form-group">
+                <label>Mật khẩu (nếu tạo mới):</label>
+                <input type="text" id="targetPassword" placeholder="Nhập mật khẩu...">
+            </div>
+            <div class="form-group">
+                <label>Cài đặt số dư (VNĐ):</label>
+                <input type="number" id="setBalance" placeholder="Ví dụ: 100000">
+            </div>
+            <button type="submit" class="btn-primary" style="background: #0284c7;">Lưu / Cập Nhật Tài Khoản</button>
+        </form>
+    </div>
 </div>
 
 <script>
-    let servicesList = [];
+    let currentUser = JSON.parse(localStorage.getItem('user'));
+    let allServices = [];
 
-    // Tự động load danh sách dịch vụ khi mở trang
-    async function fetchServices() {
-        const select = document.getElementById('serviceSelect');
-        select.innerHTML = '<option value="">Đang tải dịch vụ TikTok từ API...</option>';
+    if (!currentUser) window.location.href = '/login.html';
 
-        try {
-            const res = await fetch('/api/services');
-            const data = await res.json();
+    async function loadBalance() {
+        const res = await fetch(`/api/user/balance?username=${currentUser.username}`);
+        const data = await res.json();
 
-            if (data.status === 'success' && data.data.length > 0) {
-                servicesList = data.data;
-                select.innerHTML = '';
-                
-                servicesList.forEach(s => {
-                    select.innerHTML += `<option value="${s.service}">[ID: ${s.service}] ${s.name} - ${s.rate.toLocaleString('vi-VN')}đ / 1k</option>`;
-                });
-
-                updateServiceInfo();
+        if (data.status === 'success') {
+            if (data.role === 'root_admin') {
+                document.getElementById('apiBalanceCard').style.display = 'block';
+                document.getElementById('adminPanel').style.display = 'block';
+                document.getElementById('apiRealBalance').innerText = data.realApiBalance.toLocaleString('vi-VN') + ' đ';
+                document.getElementById('usableBalance').innerText = data.usableBalance.toLocaleString('vi-VN') + ' đ';
             } else {
-                select.innerHTML = '<option value="">Không tìm thấy dịch vụ TikTok nào!</option>';
+                document.getElementById('usableBalance').innerText = data.balance.toLocaleString('vi-VN') + ' đ';
             }
-        } catch (e) {
-            select.innerHTML = '<option value="">Lỗi tải danh sách dịch vụ!</option>';
         }
     }
 
-    function updateServiceInfo() {
-        const serviceId = parseInt(document.getElementById('serviceSelect').value);
-        const service = servicesList.find(s => s.service == serviceId);
+    async function loadServices() {
+        const res = await fetch('/api/services');
+        const data = await res.json();
+        if (data.status === 'success') {
+            allServices = data.data;
 
-        if (service) {
-            document.getElementById('limitText').innerText = `Tối thiểu: ${service.min.toLocaleString('vi-VN')} | Tối đa: ${service.max.toLocaleString('vi-VN')}`;
-            document.getElementById('quantity').min = service.min;
-            document.getElementById('quantity').max = service.max;
-            calculatePrice();
+            // Lọc danh mục phân loại
+            const categories = [...new Set(allServices.map(s => s.category))];
+            const catSelect = document.getElementById('categorySelect');
+            catSelect.innerHTML = '';
+            categories.forEach(c => catSelect.innerHTML += `<option value="${c}">${c}</option>`);
+
+            filterServices();
         }
     }
 
-    function calculatePrice() {
-        const serviceId = parseInt(document.getElementById('serviceSelect').value);
-        const quantity = parseInt(document.getElementById('quantity').value) || 0;
-        const service = servicesList.find(s => s.service == serviceId);
+    function filterServices() {
+        const selectedCat = document.getElementById('categorySelect').value;
+        const filtered = allServices.filter(s => s.category === selectedCat);
+        const serviceSelect = document.getElementById('serviceSelect');
+        serviceSelect.innerHTML = '';
 
+        filtered.forEach(s => {
+            serviceSelect.innerHTML += `<option value="${s.service}">[ID ${s.service}] ${s.name} - ${s.rate.toLocaleString('vi-VN')}đ / 1k</option>`;
+        });
+
+        updateServiceDetails();
+    }
+
+    function updateServiceDetails() {
+        const serviceId = document.getElementById('serviceSelect').value;
+        const service = allServices.find(s => s.service == serviceId);
         if (service) {
-            const total = (quantity / 1000) * service.rate;
+            document.getElementById('limitHint').innerText = `Tối thiểu: ${service.min.toLocaleString('vi-VN')} - Tối đa: ${service.max.toLocaleString('vi-VN')}`;
+            calculateTotal();
+        }
+    }
+
+    function calculateTotal() {
+        const serviceId = document.getElementById('serviceSelect').value;
+        const qty = parseInt(document.getElementById('quantity').value) || 0;
+        const service = allServices.find(s => s.service == serviceId);
+        if (service) {
+            const total = (qty / 1000) * service.rate;
             document.getElementById('totalPrice').innerText = total.toLocaleString('vi-VN') + ' đ';
         }
     }
 
+    // Đặt đơn
     document.getElementById('orderForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn = document.getElementById('btnSubmit');
+        const serviceId = document.getElementById('serviceSelect').value;
+        const qty = document.getElementById('quantity').value;
+        const service = allServices.find(s => s.service == serviceId);
+        const cost = (qty / 1000) * service.rate;
+
+        const res = await fetch('/api/order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: currentUser.username,
+                service: serviceId,
+                link: document.getElementById('link').value,
+                quantity: qty,
+                price: cost
+            })
+        });
+
+        const data = await res.json();
         const alertBox = document.getElementById('alert');
-        
-        btn.innerText = "Đang kết nối API đặt đơn...";
-        btn.disabled = true;
-        alertBox.style.display = 'none';
+        alertBox.style.display = 'block';
 
-        const payload = {
-            service: document.getElementById('serviceSelect').value,
-            link: document.getElementById('link').value.trim(),
-            quantity: document.getElementById('quantity').value
-        };
-
-        try {
-            const res = await fetch('/api/order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const result = await res.json();
-
-            alertBox.style.display = 'block';
-            if (res.ok && result.status === 'success') {
-                alertBox.className = 'success';
-                alertBox.innerHTML = `<strong>ĐẶT ĐƠN THÀNH CÔNG!</strong><br>Mã đơn hàng nhà cung cấp: <strong>${result.orderId}</strong>`;
-            } else {
-                alertBox.className = 'error';
-                alertBox.innerHTML = `<strong>TẠO ĐƠN THẤT BẠI:</strong> ${result.message}`;
-            }
-        } catch (err) {
-            alertBox.style.display = 'block';
+        if (res.ok && data.status === 'success') {
+            alertBox.className = 'success';
+            alertBox.innerHTML = `Thành công! Mã đơn gốc: ${data.orderId}`;
+            loadBalance();
+        } else {
             alertBox.className = 'error';
-            alertBox.innerText = "Lỗi kết nối tới Server!";
-        } finally {
-            btn.innerText = "TẠO ĐƠN HÀNG NGAY";
-            btn.disabled = false;
+            alertBox.innerText = data.message;
         }
     });
 
-    fetchServices();
-</script>
+    // Quản lý tài khoản con (Admin)
+    document.getElementById('adminUserForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const res = await fetch('/api/admin/manage-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                adminUsername: currentUser.username,
+                targetUsername: document.getElementById('targetUsername').value.trim(),
+                targetPassword: document.getElementById('targetPassword').value,
+                setBalance: document.getElementById('setBalance').value
+            })
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.status === 'success') loadBalance();
+    });
 
+    loadBalance();
+    loadServices();
+</script>
 </body>
 </html>
