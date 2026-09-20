@@ -1,14 +1,12 @@
 {
-  "name": "smm-reseller-system",
-  "version": "2.0.0",
-  "description": "Dịch Vụ Tăng Tương Tác TikTok",
+  "name": "tiktok-auto-service",
+  "version": "1.0.0",
+  "description": "Hệ thống TikTok Auto Service",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "axios": "^1.6.0",
-    "dotenv": "^16.3.1",
     "express": "^4.18.2"
   }
 }
