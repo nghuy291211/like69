@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt đơn hàng SMM Panel</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        body { background-color: #121212; color: #ffffff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .card { background: #1e1e2f; padding: 25px; border-radius: 12px; max-width: 480px; width: 100%; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h2 { text-align: center; margin-bottom: 20px; color: #4e54c8; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #2a2a3d; color: #fff; font-size: 14px; }
+        input:focus { outline: none; border-color: #4e54c8; }
+        button { width: 100%; padding: 12px; background: linear-gradient(to right, #4e54c8, #8f94fb); border: none; border-radius: 6px; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        button:hover { opacity: 0.9; }
+        #result { margin-top: 15px; padding: 10px; border-radius: 6px; display: none; word-wrap: break-word; font-size: 14px; }
+        .success { background-color: #1b4332; color: #75b798; border: 1px solid #2d6a4f; }
+        .error { background-color: #4c1d1d; color: #ea868f; border: 1px solid #842029; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Tạo đơn hàng SMM</h2>
+    <form id="orderForm">
+        <div class="form-group">
+            <label>API Key của bạn:</label>
+            <input type="text" id="apiKey" placeholder="Nhập c7f7b********" required>
+        </div>
+        <div class="form-group">
+            <label>ID Dịch vụ (Service ID):</label>
+            <input type="number" id="service" placeholder="Ví dụ: 101" required>
+        </div>
+        <div class="form-group">
+            <label>Đường dẫn (Link bài viết / trang):</label>
+            <input type="url" id="link" placeholder="https://..." required>
+        </div>
+        <div class="form-group">
+            <label>Số lượng (Quantity):</label>
+            <input type="number" id="quantity" placeholder="Ví dụ: 1000" required>
+        </div>
+        <button type="submit" id="submitBtn">Gửi đơn hàng</button>
+    </form>
+
+    <div id="result"></div>
+</div>
+
+<script>
+    document.getElementById('orderForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        const resultDiv = document.getElementById('result');
+        
+        btn.innerText = 'Đang xử lý...';
+        btn.disabled = true;
+        resultDiv.style.display = 'none';
+
+        const data = {
+            apiKey: document.getElementById('apiKey').value.trim(),
+            service: document.getElementById('service').value,
+            link: document.getElementById('link').value.trim(),
+            quantity: document.getElementById('quantity').value
+        };
+
+        try {
+            const res = await fetch('/api/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const responseData = await res.json();
+
+            resultDiv.style.display = 'block';
+            if (res.ok && responseData.status === 'success') {
+                resultDiv.className = 'success';
+                resultDiv.innerHTML = '<strong>Thành công!</strong><br><pre>' + JSON.stringify(responseData.data, null, 2) + '</pre>';
+            } else {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = '<strong>Lỗi:</strong> ' + JSON.stringify(responseData.message);
+            }
+        } catch (err) {
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'error';
+            resultDiv.innerText = 'Lỗi kết nối tới server!';
+        } finally {
+            btn.innerText = 'Gửi đơn hàng';
+            btn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>
+
