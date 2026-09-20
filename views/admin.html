@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Admin - TikTok Auto</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif; }
+        body { background: #090d16; color: #f1f5f9; padding: 16px 12px; }
+        .container { max-width: 520px; margin: 0 auto; }
+
+        /* NAVBAR ADMIN */
+        .navbar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background: rgba(15, 23, 42, 0.8); 
+            backdrop-filter: blur(16px); 
+            padding: 12px 16px; 
+            border-radius: 16px; 
+            border: 1px solid rgba(56, 189, 248, 0.2); 
+            margin-bottom: 20px; 
+        }
+
+        .logo { font-size: 17px; font-weight: 800; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
+        
+        .btn-back {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f1f5f9;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* CARD VÀ MENU TABS ĐỢT MỚI */
+        .card { 
+            background: #0f172a; 
+            border-radius: 20px; 
+            padding: 22px 18px; 
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.4); 
+        }
+
+        /* Thanh Chuyển Tab (Pill Design) */
+        .admin-nav { 
+            display: flex; 
+            background: #050811; 
+            padding: 4px; 
+            border-radius: 14px; 
+            margin-bottom: 22px; 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 4px;
+        }
+
+        .admin-nav .btn-tab { 
+            flex: 1; 
+            padding: 10px 4px; 
+            color: #64748b; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            font-size: 12px; 
+            text-align: center; 
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .admin-nav .btn-tab.active { 
+            background: #0284c7;
+            color: #ffffff; 
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+        }
+
+        .form-group { margin-bottom: 14px; }
+        label { display: block; font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; }
+        select, input { 
+            width: 100%; 
+            padding: 12px 14px; 
+            border-radius: 12px; 
+            border: 1px solid #1e293b; 
+            background: #070a12; 
+            color: #fff; 
+            font-size: 13px; 
+            outline: none; 
+        }
+        select:focus, input:focus { border-color: #38bdf8; }
+
+        button.btn-submit { 
+            width: 100%; 
+            padding: 13px; 
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); 
+            border: none; 
+            border-radius: 12px; 
+            color: #fff; 
+            font-weight: 700; 
+            font-size: 14px; 
+            cursor: pointer; 
+            box-shadow: 0 4px 16px rgba(2, 132, 199, 0.35);
+            margin-top: 8px;
+        }
+
+        /* BẢNG DANH SÁCH USER */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #1e293b; font-size: 13px; }
+        th { background: #070a12; color: #38bdf8; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="navbar">
+        <div class="logo"><i class="fa-solid fa-user-gear"></i> Trang Admin</div>
+        <a href="/" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Quay lại Web</a>
+    </div>
+
+    <div class="card">
+        <!-- thanh chuyển Tab Admin -->
+        <div class="admin-nav">
+            <div class="btn-tab active" id="tabCreateBtn" onclick="switchAdminTab('create')"><i class="fa-solid fa-user-plus"></i> Tạo Acc</div>
+            <div class="btn-tab" id="tabBalanceBtn" onclick="switchAdminTab('balance')"><i class="fa-solid fa-coins"></i> Cài Số Dư</div>
+            <div class="btn-tab" id="tabListBtn" onclick="switchAdminTab('list')"><i class="fa-solid fa-list"></i> Danh Sách</div>
+        </div>
+
+        <!-- FORM TẠO TÀI KHOẢN -->
+        <form id="createAccForm">
+            <div class="form-group">
+                <label>Tên đăng nhập mới:</label>
+                <input type="text" id="newUsername" placeholder="Nhập tên user..." required>
+            </div>
+            <div class="form-group">
+                <label>Mật khẩu:</label>
+                <input type="text" id="newPassword" placeholder="Nhập mật khẩu..." required>
+            </div>
+            <div class="form-group">
+                <label>Số dư ban đầu (VNĐ):</label>
+                <input type="number" id="initialBalance" value="0">
+            </div>
+            <button type="submit" class="btn-submit">Tạo Tài Khoản Con</button>
+        </form>
+
+        <!-- FORM CÀI SỐ DƯ -->
+        <form id="updateBalanceForm" style="display: none;">
+            <div class="form-group">
+                <label>Tên đăng nhập cần chỉnh sửa:</label>
+                <input type="text" id="targetUsername" placeholder="Nhập tên user..." required>
+            </div>
+            <div class="form-group">
+                <label>Hình thức:</label>
+                <select id="actionType">
+                    <option value="add">Cộng thêm số dư</option>
+                    <option value="set">Đặt lại số dư mới</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Số tiền (VNĐ):</label>
+                <input type="number" id="amount" placeholder="Nhập số tiền..." required>
+            </div>
+            <button type="submit" class="btn-submit">Cập Nhật Số Dư</button>
+        </form>
+
+        <!-- BẢNG DANH SÁCH -->
+        <div id="userListSection" style="display: none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tên Tài Khoản</th>
+                        <th>Số Dư Hiển Thị</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+
+    // Kiểm tra quyền Admin
+    if (!currentUser || currentUser.role !== 'root_admin') {
+        alert("Bạn không có quyền truy cập trang Admin!");
+        window.location.href = "/";
+    }
+
+    function formatMoney(amount) {
+        if (amount === null || amount === undefined || isNaN(amount)) return '0 đ';
+        let numStr = Number(amount).toFixed(3); 
+        let [integerPart, decimalPart] = numStr.split('.');
+        let formattedInteger = parseInt(integerPart, 10).toLocaleString('vi-VN');
+        decimalPart = decimalPart.replace(/0+$/, '');
+        return decimalPart.length > 0 ? `${formattedInteger},${decimalPart} đ` : `${formattedInteger} đ`;
+    }
+
+    function switchAdminTab(tab) {
+        document.getElementById('createAccForm').style.display = tab === 'create' ? 'block' : 'none';
+        document.getElementById('updateBalanceForm').style.display = tab === 'balance' ? 'block' : 'none';
+        document.getElementById('userListSection').style.display = tab === 'list' ? 'block' : 'none';
+
+        document.getElementById('tabCreateBtn').className = `btn-tab ${tab === 'create' ? 'active' : ''}`;
+        document.getElementById('tabBalanceBtn').className = `btn-tab ${tab === 'balance' ? 'active' : ''}`;
+        document.getElementById('tabListBtn').className = `btn-tab ${tab === 'list' ? 'active' : ''}`;
+
+        if (tab === 'list') loadUserList();
+    }
+
+    async function loadUserList() {
+        const res = await fetch(`/api/admin/users?adminUsername=${currentUser.username}`);
+        const data = await res.json();
+        if (data.status === 'success') {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
+            if (data.data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:#64748b;">Chưa có tài khoản con nào</td></tr>`;
+                return;
+            }
+            data.data.forEach(u => {
+                tbody.innerHTML += `<tr><td><b>${u.username}</b></td><td style="color:#10b981; font-weight:600;">${formatMoney(u.balance)}</td></tr>`;
+            });
+        }
+    }
+
+    document.getElementById('createAccForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const res = await fetch('/api/admin/create-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                adminUsername: currentUser.username,
+                newUsername: document.getElementById('newUsername').value.trim(),
+                newPassword: document.getElementById('newPassword').value,
+                initialBalance: document.getElementById('initialBalance').value
+            })
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.status === 'success') document.getElementById('createAccForm').reset();
+    });
+
+    document.getElementById('updateBalanceForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const res = await fetch('/api/admin/update-balance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                adminUsername: currentUser.username,
+                targetUsername: document.getElementById('targetUsername').value.trim(),
+                actionType: document.getElementById('actionType').value,
+                amount: document.getElementById('amount').value
+            })
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.status === 'success') document.getElementById('updateBalanceForm').reset();
+    });
+</script>
+</body>
+</html>
+
