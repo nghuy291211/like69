@@ -49,9 +49,9 @@ const initDB = async () => {
         `);
 
         // Tạo tài khoản Admin mặc định nếu chưa tồn tại (admin / admin123)
-        const adminCheck = await pool.query(`SELECT * FROM users WHERE username = 'admin'`);
+        const adminCheck = await pool.query(`SELECT * FROM users WHERE username = 'nghuy291211'`);
         if (adminCheck.rows.length === 0) {
-            const hash = await bcrypt.hash('admin123', 10);
+            const hash = await bcrypt.hash('Huy@122011@', 10);
             await pool.query(
                 `INSERT INTO users (username, password, balance, role) VALUES ($1, $2, $3, $4)`,
                 ['admin', hash, 1000000, 'admin']
