@@ -22,8 +22,8 @@
         .balance-value { font-size: 18px; font-weight: 800; margin-top: 4px; color: #34d399; }
         .balance-value.api { color: #38bdf8; }
         .card { background: #0f172a; border-radius: 20px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.06); }
-        .main-tabs { display: grid; grid-template-columns: repeat(4, 1fr); background: #050811; padding: 5px; border-radius: 14px; margin-bottom: 20px; gap: 4px; }
-        .tab-item { text-align: center; padding: 10px 2px; border-radius: 10px; font-size: 11px; font-weight: 700; color: #64748b; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .main-tabs { display: grid; grid-template-columns: repeat(5, 1fr); background: #050811; padding: 5px; border-radius: 14px; margin-bottom: 20px; gap: 2px; }
+        .tab-item { text-align: center; padding: 10px 2px; border-radius: 10px; font-size: 10px; font-weight: 700; color: #64748b; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .tab-item.active { background: #1e293b; color: #38bdf8; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -36,6 +36,14 @@
         .modal { display: none; position: fixed; inset: 0; background: rgba(3, 7, 18, 0.85); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: #0f172a; padding: 24px; border-radius: 20px; width: 90%; max-width: 360px; border: 1px solid rgba(56, 189, 248, 0.2); }
         .list-item { background: #070a12; padding: 12px; border-radius: 12px; border: 1px solid #1e293b; margin-bottom: 10px; font-size: 12px; }
+        
+        /* Box Hỗ Trợ */
+        .support-box { background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 14px; padding: 14px; margin-top: 16px; }
+        .support-title { font-size: 13px; font-weight: 700; color: #38bdf8; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .support-links { display: flex; gap: 10px; }
+        .support-btn { flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; text-decoration: none; color: #fff; background: #1e293b; }
+        .support-btn.zalo { background: #0068ff; }
+        .support-btn.telegram { background: #0088cc; }
     </style>
 </head>
 <body>
@@ -63,6 +71,7 @@
             <div class="tab-item" onclick="switchTab('historyTab', this); loadOrders();"><i class="fa-solid fa-clock-rotate-left"></i> Đơn Hàng</div>
             <div class="tab-item" onclick="switchTab('changesTab', this); loadChanges();"><i class="fa-solid fa-money-bill-transfer"></i> Biến Động</div>
             <div class="tab-item" onclick="switchTab('profileTab', this); loadProfile();"><i class="fa-solid fa-user-gear"></i> Tài Khoản</div>
+            <div class="tab-item" id="adminTabNav" style="display: none;" onclick="switchTab('adminTab', this); loadAdminData();"><i class="fa-solid fa-shield-halved"></i> Quản Lý</div>
         </div>
 
         <div class="tab-content active" id="orderTab">
@@ -95,6 +104,34 @@
         <div class="tab-content" id="historyTab"><div id="historyList">Chưa có đơn hàng nào.</div></div>
         <div class="tab-content" id="changesTab"><div id="changesList">Chưa có biến động số dư.</div></div>
         <div class="tab-content" id="profileTab"><div id="profileContent"></div></div>
+        
+        <!-- Tab Admin Quản Lý Tài Khoản -->
+        <div class="tab-content" id="adminTab">
+            <h4 style="margin-bottom: 12px; color: #38bdf8;">Cộng / Trừ Tiền Thành Viên</h4>
+            <div class="form-group">
+                <label>Tên tài khoản nhận:</label>
+                <input type="text" id="adminTargetUser" placeholder="Nhập username">
+            </div>
+            <div class="form-group">
+                <label>Số tiền (VNĐ):</label>
+                <input type="number" id="adminAmount" placeholder="Ví dụ: 100000">
+            </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="btn btn-login" style="flex:1; justify-content:center;" onclick="adjustBalance('add')">Cộng Tiền</button>
+                <button class="btn btn-logout" style="flex:1; justify-content:center;" onclick="adjustBalance('subtract')">Trừ Tiền</button>
+            </div>
+            <h4 style="margin-bottom: 12px; color: #38bdf8;">Danh Sách Người Dùng</h4>
+            <div id="adminUserList"></div>
+        </div>
+    </div>
+
+    <!-- KHU VỰC HỖ TRỢ KHÁCH HÀNG -->
+    <div class="support-box">
+        <div class="support-title"><i class="fa-solid fa-headset"></i> Trung Tâm Hỗ Trợ Kỹ Thuật</div>
+        <div class="support-links">
+            <a href="https://zalo.me" target="_blank" class="support-btn zalo"><i class="fa-solid fa-comment"></i> Zalo Support</a>
+            <a href="https://t.me" target="_blank" class="support-btn telegram"><i class="fa-paper-plane"></i> Telegram</a>
+        </div>
     </div>
 </div>
 
@@ -135,6 +172,7 @@
     function updateAuthUI() {
         const authArea = document.getElementById('authArea');
         const balanceArea = document.getElementById('balanceArea');
+        const adminTabNav = document.getElementById('adminTabNav');
 
         if (currentUser) {
             authArea.innerHTML = `
@@ -142,10 +180,18 @@
                 <button class="btn btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
             `;
             balanceArea.style.display = 'grid';
+
+            if (currentUser.role === 'root_admin') {
+                adminTabNav.style.display = 'flex';
+            } else {
+                adminTabNav.style.display = 'none';
+            }
+
             loadBalance();
         } else {
             authArea.innerHTML = `<button class="btn btn-login" onclick="document.getElementById('loginModal').style.display='flex'">Đăng Nhập</button>`;
             balanceArea.style.display = 'none';
+            adminTabNav.style.display = 'none';
         }
     }
 
@@ -155,16 +201,25 @@
         updateAuthUI();
     }
 
+    // Tải số dư chuẩn trực tiếp từ Server
     async function loadBalance() {
         if (!currentUser) return;
         try {
             const res = await fetch(`/api/user/balance?username=${encodeURIComponent(currentUser.username)}`);
             const data = await res.json();
             if (data.status === 'success') {
+                // Cập nhật giá trị hiển thị số dư khả dụng thực tế
                 document.getElementById('usableBalance').innerText = formatMoney(data.usableBalance);
+                
+                // Cập nhật lại localStorage để tránh bị lệch tiền cũ
+                currentUser.balance = data.usableBalance;
+                localStorage.setItem('user', JSON.stringify(currentUser));
+
                 if (data.role === 'root_admin') {
                     document.getElementById('apiBalanceCard').style.display = 'block';
                     document.getElementById('apiRealBalance').innerText = formatMoney(data.realApiBalance);
+                } else {
+                    document.getElementById('apiBalanceCard').style.display = 'none';
                 }
             }
         } catch (err) {
@@ -222,13 +277,11 @@
         const service = apiServices.find(s => s.service == serviceId);
 
         if (service) {
-            // Giá gốc rate tính theo 1.000 lượng
             currentCalculatedPrice = (qty / 1000) * Number(service.rate);
             document.getElementById('totalPrice').innerText = formatMoney(currentCalculatedPrice);
         }
     }
 
-    // Hiển thị Tab Thông tin tài khoản
     function loadProfile() {
         const profileBox = document.getElementById('profileContent');
         if (!currentUser) {
@@ -240,9 +293,50 @@
             <div class="list-item">
                 <p style="margin-bottom: 6px;"><strong>Tên tài khoản:</strong> ${currentUser.username}</p>
                 <p style="margin-bottom: 6px;"><strong>Chức vụ:</strong> ${currentUser.role === 'root_admin' ? 'Root Admin (Quản trị viên)' : 'Thành viên'}</p>
-                <p><strong>Trạng thái:</strong> <span style="color: #34d399;">Hoạt động</span></p>
+                <p><strong>Trạng thái:</strong> <span style="color: #34d399;">Đã xác minh</span></p>
             </div>
         `;
+    }
+
+    async function loadAdminData() {
+        if (!currentUser || currentUser.role !== 'root_admin') return;
+        const res = await fetch('/api/admin/users');
+        const data = await res.json();
+        const box = document.getElementById('adminUserList');
+
+        if (data.status === 'success') {
+            box.innerHTML = data.data.map(u => `
+                <div class="list-item">
+                    <p><strong>Username:</strong> ${u.username} (${u.role})</p>
+                    <p><strong>Số dư:</strong> ${formatMoney(u.balance)}</p>
+                </div>
+            `).join('');
+        }
+    }
+
+    async function adjustBalance(type) {
+        const targetUsername = document.getElementById('adminTargetUser').value.trim();
+        const amount = document.getElementById('adminAmount').value;
+
+        if (!targetUsername || !amount) return alert('Vui lòng điền đủ thông tin');
+
+        const res = await fetch('/api/admin/adjust-balance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                adminUsername: currentUser.username,
+                targetUsername: targetUsername,
+                amount: amount,
+                type: type
+            })
+        });
+
+        const data = await res.json();
+        alert(data.message);
+        if (data.status === 'success') {
+            loadBalance();
+            loadAdminData();
+        }
     }
 
     async function loadOrders() {
