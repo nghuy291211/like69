@@ -7,54 +7,57 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif; }
-        body { background: #070a12; color: #f1f5f9; padding: 15px; }
-        .container { max-width: 680px; margin: 0 auto; }
+        body { background: #090d16; color: #f1f5f9; padding: 16px 12px; }
+        .container { max-width: 520px; margin: 0 auto; }
 
-        /* ==================== 1. MENU NAVBAR CHÍNH ==================== */
+        /* ==================== NAVBAR ==================== */
         .navbar { 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            background: rgba(15, 23, 42, 0.75); 
+            background: rgba(15, 23, 42, 0.8); 
             backdrop-filter: blur(16px); 
             -webkit-backdrop-filter: blur(16px);
-            padding: 14px 20px; 
-            border-radius: 18px; 
+            padding: 12px 16px; 
+            border-radius: 16px; 
             border: 1px solid rgba(255, 255, 255, 0.08); 
-            margin-bottom: 22px; 
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+            margin-bottom: 20px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
         }
 
         .logo { 
-            font-size: 19px; 
+            font-size: 18px; 
             font-weight: 800; 
             background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             display: flex; 
             align-items: center; 
-            gap: 10px; 
-            letter-spacing: -0.5px;
+            gap: 8px; 
         }
 
         .logo i {
             -webkit-text-fill-color: initial;
             color: #38bdf8;
-            font-size: 20px;
-            filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));
+            font-size: 19px;
+            filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6));
         }
 
+        .nav-actions { display: flex; align-items: center; gap: 8px; }
+
+        /* ==================== BUTTONS DESIGN MỚI ==================== */
         .btn { 
             border: none; 
-            padding: 9px 16px; 
-            border-radius: 10px; 
+            padding: 9px 15px; 
+            border-radius: 12px; 
             font-weight: 600; 
             cursor: pointer; 
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
             font-size: 13px; 
             display: inline-flex; 
             align-items: center; 
-            gap: 8px; 
+            gap: 6px; 
+            text-decoration: none;
         }
 
         .btn-login { 
@@ -62,42 +65,39 @@
             color: #fff; 
             box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
         }
-        .btn-login:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5); 
+        .btn-login:active { transform: scale(0.96); }
+
+        .btn-admin {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35);
         }
 
         .btn-logout { 
-            background: rgba(239, 68, 68, 0.15); 
+            background: rgba(239, 68, 68, 0.12); 
             color: #f87171; 
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-        .btn-logout:hover { 
-            background: #ef4444; 
-            color: #fff;
-            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+            border: 1px solid rgba(239, 68, 68, 0.25);
         }
 
         .user-info-tag {
             background: rgba(56, 189, 248, 0.1);
             border: 1px solid rgba(56, 189, 248, 0.25);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 13px;
+            padding: 6px 10px;
+            border-radius: 12px;
+            font-size: 12px;
             font-weight: 600;
             color: #38bdf8;
-            margin-right: 8px;
             display: inline-flex;
             align-items: center;
             gap: 6px;
         }
 
-        /* ==================== 2. KHU VỰC SỐ DƯ ==================== */
-        .balance-container { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 22px; }
+        /* ==================== SỐ DƯ CARD ==================== */
+        .balance-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
         .balance-card { 
             background: rgba(15, 23, 42, 0.6); 
             border: 1px solid rgba(255, 255, 255, 0.06); 
-            padding: 16px; 
+            padding: 14px; 
             border-radius: 16px; 
             backdrop-filter: blur(10px);
             position: relative;
@@ -106,112 +106,80 @@
         .balance-card::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 2px;
+            top: 0; left: 0; width: 100%; height: 3px;
             background: linear-gradient(90deg, #10b981, transparent);
         }
         .balance-card.api::before { background: linear-gradient(90deg, #38bdf8, transparent); }
-        .balance-title { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
-        .balance-value { font-size: 19px; font-weight: 800; margin-top: 6px; color: #34d399; }
+        .balance-title { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; }
+        .balance-value { font-size: 18px; font-weight: 800; margin-top: 4px; color: #34d399; }
         .balance-value.api { color: #38bdf8; }
 
-        /* ==================== 3. KHU VỰC CARD & ADMIN MENU ==================== */
+        /* ==================== CARD & FORM ==================== */
         .card { 
             background: #0f172a; 
             border-radius: 20px; 
-            padding: 24px; 
-            margin-bottom: 22px; 
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.5); 
-        }
-
-        .admin-nav { 
-            display: flex; 
-            background: #070a12; 
-            padding: 5px; 
-            border-radius: 14px; 
+            padding: 20px; 
             margin-bottom: 20px; 
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            gap: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.4); 
         }
 
-        .admin-nav .btn-tab { 
-            flex: 1; 
-            padding: 11px 8px; 
-            color: #94a3b8; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            font-size: 12px; 
-            text-align: center; 
-            transition: all 0.25s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            border: 1px solid transparent;
-        }
-
-        .admin-nav .btn-tab:hover {
-            color: #f1f5f9;
-            background: rgba(255, 255, 255, 0.03);
-        }
-
-        .admin-nav .btn-tab.active { 
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(2, 132, 199, 0.2) 100%);
-            color: #38bdf8; 
-            border-color: rgba(56, 189, 248, 0.3);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            font-weight: 700;
-        }
-
-        /* FORM & INPUT */
-        h3 { margin-bottom: 18px; font-size: 16px; color: #f8fafc; display: flex; align-items: center; gap: 10px; }
-        .form-group { margin-bottom: 16px; }
-        label { display: block; font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 8px; }
+        h3 { margin-bottom: 16px; font-size: 16px; color: #f8fafc; display: flex; align-items: center; gap: 8px; }
+        .form-group { margin-bottom: 14px; }
+        label { display: block; font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; }
+        
         select, input { 
             width: 100%; 
             padding: 12px 14px; 
-            border-radius: 10px; 
+            border-radius: 12px; 
             border: 1px solid #1e293b; 
             background: #070a12; 
             color: #fff; 
-            font-size: 14px; 
+            font-size: 13px; 
             outline: none; 
-            transition: 0.2s;
+            transition: all 0.2s;
         }
         select:focus, input:focus {
             border-color: #38bdf8;
             box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
         }
 
-        .total-box { background: rgba(7, 10, 18, 0.6); border: 1px dashed #334155; padding: 14px; border-radius: 12px; text-align: center; margin: 18px 0; }
+        .total-box { 
+            background: rgba(7, 10, 18, 0.7); 
+            border: 1px dashed rgba(52, 211, 153, 0.3); 
+            padding: 14px; 
+            border-radius: 14px; 
+            text-align: center; 
+            margin: 18px 0; 
+        }
         .total-price { font-size: 22px; font-weight: 800; color: #34d399; margin-top: 4px; }
 
+        /* Nút Tạo Đơn Hàng Ngay - Thiết kế mới */
         button.btn-submit { 
             width: 100%; 
-            padding: 13px; 
+            padding: 14px; 
             background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
             border: none; 
-            border-radius: 10px; 
+            border-radius: 12px; 
             color: #fff; 
             font-weight: 700; 
             font-size: 15px; 
             cursor: pointer; 
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
-            transition: 0.2s;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        button.btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45); }
+        button.btn-submit:active { transform: scale(0.98); }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #1e293b; font-size: 13px; }
-        th { background: #070a12; color: #38bdf8; font-weight: 700; }
-
-        /* ==================== 4. MODAL POPUP VÀ LOGIN PHONG CÁCH MỚI ==================== */
+        /* ==================== MODAL POPUP ==================== */
         .modal { 
             display: none; 
             position: fixed; 
             inset: 0; 
-            background: rgba(3, 7, 18, 0.82); 
+            background: rgba(3, 7, 18, 0.85); 
             backdrop-filter: blur(12px); 
             -webkit-backdrop-filter: blur(12px);
             justify-content: center; 
@@ -220,81 +188,48 @@
         }
 
         .modal-content { 
-            background: rgba(15, 23, 42, 0.95); 
-            padding: 32px 28px; 
-            border-radius: 24px; 
+            background: #0f172a; 
+            padding: 28px 24px; 
+            border-radius: 22px; 
             width: 90%; 
-            max-width: 380px; 
+            max-width: 360px; 
             position: relative; 
             border: 1px solid rgba(56, 189, 248, 0.2); 
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(56, 189, 248, 0.1); 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6); 
         }
 
-        /* Nút đóng (X) dạng tròn phát sáng */
         .close-modal { 
             position: absolute; 
-            right: 18px; 
-            top: 18px; 
-            width: 32px;
-            height: 32px;
+            right: 16px; 
+            top: 16px; 
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.05);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px; 
+            font-size: 14px; 
             color: #94a3b8; 
             cursor: pointer; 
-            transition: all 0.25s ease; 
-        }
-        .close-modal:hover { 
-            background: rgba(239, 68, 68, 0.2);
-            color: #f87171; 
-            transform: rotate(90deg);
         }
 
-        /* Header Popup Đăng Nhập */
-        .login-header {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-
+        .login-header { text-align: center; margin-bottom: 20px; }
         .login-icon-box {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(129, 140, 248, 0.15) 100%);
+            width: 54px; height: 54px;
+            background: rgba(56, 189, 248, 0.12);
             border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 14px;
-            color: #38bdf8;
-            font-size: 24px;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 12px;
+            color: #38bdf8; font-size: 22px;
         }
 
-        .login-header h3 {
-            justify-content: center;
-            font-size: 20px;
-            font-weight: 800;
-            color: #f8fafc;
-            margin-bottom: 4px;
-        }
-
-        .login-header p {
-            font-size: 12px;
-            color: #64748b;
-        }
-
-        /* POPUP ĐANG XỬ LÝ (LOADING) */
-        .loading-content { text-align: center; padding: 35px 20px; }
-        .spinner { width: 54px; height: 54px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #10b981; border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 22px; filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.4)); }
+        .loading-content { text-align: center; padding: 30px 20px; }
+        .spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #10b981; border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 18px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .loading-title { font-size: 17px; font-weight: 700; color: #f8fafc; margin-bottom: 8px; }
-        .loading-warning { font-size: 13px; color: #fbbf24; font-weight: 600; background: rgba(251, 191, 36, 0.1); padding: 8px 12px; border-radius: 8px; display: inline-block; }
 
-        #alert { display: none; padding: 12px; border-radius: 10px; margin-top: 14px; font-size: 13px; font-weight: 600; }
+        #alert { display: none; padding: 12px; border-radius: 10px; margin-top: 14px; font-size: 13px; font-weight: 600; text-align: center; }
         .success { background: rgba(6, 78, 59, 0.8); color: #6ee7b7; border: 1px solid #10b981; }
         .error { background: rgba(127, 29, 29, 0.8); color: #fca5a5; border: 1px solid #ef4444; }
     </style>
@@ -302,10 +237,10 @@
 <body>
 
 <div class="container">
-    <!-- NAVBAR CHÍNH -->
+    <!-- NAVBAR -->
     <div class="navbar">
         <div class="logo"><i class="fa-brands fa-tiktok"></i> TikTok Auto</div>
-        <div id="authArea">
+        <div class="nav-actions" id="authArea">
             <button class="btn btn-login" onclick="openLoginModal()"><i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập</button>
         </div>
     </div>
@@ -313,16 +248,16 @@
     <!-- SỐ DƯ -->
     <div class="balance-container" id="balanceArea" style="display: none;">
         <div class="balance-card">
-            <div class="balance-title"><i class="fa-solid fa-wallet" style="margin-right: 4px;"></i> Số Dư Sử Dụng</div>
+            <div class="balance-title"><i class="fa-solid fa-wallet"></i> Số Dư Sử Dụng</div>
             <div class="balance-value" id="usableBalance">0 đ</div>
         </div>
         <div class="balance-card api" id="apiBalanceCard" style="display: none;">
-            <div class="balance-title"><i class="fa-solid fa-server" style="margin-right: 4px;"></i> Số Dư API Thực</div>
+            <div class="balance-title"><i class="fa-solid fa-server"></i> Số Dư API Thực</div>
             <div class="balance-value api" id="apiRealBalance">0 đ</div>
         </div>
     </div>
 
-    <!-- FORM ĐẶT ĐƠN -->
+    <!-- FORM ĐẶT ĐƠN TIKTOK -->
     <div class="card">
         <h3><i class="fa-solid fa-cart-shopping" style="color: #10b981;"></i> Đặt Đơn TikTok Tự Động</h3>
         <form id="orderForm">
@@ -348,110 +283,49 @@
             </div>
 
             <div class="total-box">
-                <span style="font-size: 13px; color: #94a3b8;">Tổng tiền cần thanh toán:</span>
+                <span style="font-size: 12px; color: #94a3b8;">Tổng tiền cần thanh toán:</span>
                 <div class="total-price" id="totalPrice">0 đ</div>
             </div>
 
-            <button type="submit" class="btn-submit" id="orderBtn">Tạo Đơn Hàng Ngay</button>
+            <button type="submit" class="btn-submit" id="orderBtn">
+                <i class="fa-solid fa-bolt"></i> Tạo Đơn Hàng Ngay
+            </button>
         </form>
         <div id="alert"></div>
     </div>
-
-    <!-- KHU VỰC ADMIN -->
-    <div class="card" id="adminPanel" style="display: none; border: 1px solid rgba(56, 189, 248, 0.3);">
-        <h3 style="color: #38bdf8;"><i class="fa-solid fa-user-gear"></i> Quản Lý Tài Khoản (Admin Gốc)</h3>
-        
-        <div class="admin-nav">
-            <div class="btn-tab active" id="tabCreateBtn" onclick="switchAdminTab('create')"><i class="fa-solid fa-user-plus"></i> Tạo Acc</div>
-            <div class="btn-tab" id="tabBalanceBtn" onclick="switchAdminTab('balance')"><i class="fa-solid fa-coins"></i> Cài Số Dư</div>
-            <div class="btn-tab" id="tabListBtn" onclick="switchAdminTab('list')"><i class="fa-solid fa-list"></i> Danh Sách</div>
-        </div>
-
-        <form id="createAccForm">
-            <div class="form-group">
-                <label>Tên đăng nhập mới:</label>
-                <input type="text" id="newUsername" placeholder="Nhập tên user..." required>
-            </div>
-            <div class="form-group">
-                <label>Mật khẩu:</label>
-                <input type="text" id="newPassword" placeholder="Nhập mật khẩu..." required>
-            </div>
-            <div class="form-group">
-                <label>Số dư ban đầu (VNĐ):</label>
-                <input type="number" id="initialBalance" value="0">
-            </div>
-            <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);">Tạo Tài Khoản Con</button>
-        </form>
-
-        <form id="updateBalanceForm" style="display: none;">
-            <div class="form-group">
-                <label>Tên đăng nhập cần chỉnh sửa:</label>
-                <input type="text" id="targetUsername" placeholder="Nhập chính xác tên user..." required>
-            </div>
-            <div class="form-group">
-                <label>Hình thức:</label>
-                <select id="actionType">
-                    <option value="add">Cộng thêm số dư</option>
-                    <option value="set">Đặt lại số dư mới</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Số tiền (VNĐ):</label>
-                <input type="number" id="amount" placeholder="Nhập số tiền..." required>
-            </div>
-            <button type="submit" class="btn-submit">Cập Nhật Số Dư</button>
-        </form>
-
-        <div id="userListSection" style="display: none;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Tên Tài Khoản</th>
-                        <th>Số Dư Hiển Thị</th>
-                    </tr>
-                </thead>
-                <tbody id="userTableBody">
-                </tbody>
-            </table>
-        </div>
-    </div>
 </div>
 
-<!-- MODAL POPUP ĐĂNG NHẬP PHONG CÁCH MỚI -->
+<!-- MODAL ĐĂNG NHẬP -->
 <div class="modal" id="loginModal">
     <div class="modal-content">
         <div class="close-modal" onclick="closeLoginModal()"><i class="fa-solid fa-xmark"></i></div>
-        
         <div class="login-header">
-            <div class="login-icon-box">
-                <i class="fa-solid fa-shield-halved"></i>
-            </div>
-            <h3>Đăng Nhập</h3>
-            <p>Nhập thông tin tài khoản của bạn để tiếp tục</p>
+            <div class="login-icon-box"><i class="fa-solid fa-shield-halved"></i></div>
+            <h3 style="justify-content: center; margin-bottom: 2px;">Đăng Nhập</h3>
+            <p style="font-size: 12px; color: #64748b;">Nhập tài khoản để tiếp tục</p>
         </div>
-
         <form id="loginForm">
             <div class="form-group">
-                <label><i class="fa-solid fa-user" style="margin-right: 5px; color: #38bdf8;"></i> Tài khoản</label>
-                <input type="text" id="loginUsername" required placeholder="Tên tài khoản..." autocomplete="off">
+                <label>Tài khoản</label>
+                <input type="text" id="loginUsername" required placeholder="Tên tài khoản...">
             </div>
             <div class="form-group">
-                <label><i class="fa-solid fa-lock" style="margin-right: 5px; color: #38bdf8;"></i> Mật khẩu</label>
+                <label>Mật khẩu</label>
                 <input type="password" id="loginPassword" required placeholder="••••••••">
             </div>
-            <button type="submit" class="btn-submit" style="margin-top: 12px; background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); box-shadow: 0 4px 18px rgba(56, 189, 248, 0.35);">
-                <i class="fa-solid fa-right-to-bracket" style="margin-right: 6px;"></i> Xác Nhận Đăng Nhập
+            <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); margin-top: 10px;">
+                Đăng Nhập
             </button>
         </form>
     </div>
 </div>
 
-<!-- POPUP XOAY VÒNG ĐANG ĐẶT HÀNG -->
+<!-- POPUP LOADING -->
 <div class="modal" id="loadingModal">
     <div class="modal-content loading-content">
         <div class="spinner"></div>
-        <div class="loading-title">Hiện đang đặt hàng...</div>
-        <div class="loading-warning"><i class="fa-solid fa-triangle-exclamation"></i> Vui lòng không tắt web tránh mất tiền</div>
+        <div style="font-size: 16px; font-weight: 700; color: #fff;">Hiện đang đặt hàng...</div>
+        <div style="font-size: 12px; color: #fbbf24; margin-top: 6px;">Vui lòng không tắt trang web</div>
     </div>
 </div>
 
@@ -461,40 +335,38 @@
 
     function formatMoney(amount) {
         if (amount === null || amount === undefined || isNaN(amount)) return '0 đ';
-        
         let numStr = Number(amount).toFixed(3); 
         let [integerPart, decimalPart] = numStr.split('.');
         let formattedInteger = parseInt(integerPart, 10).toLocaleString('vi-VN');
         decimalPart = decimalPart.replace(/0+$/, '');
-
-        if (decimalPart.length > 0) {
-            return `${formattedInteger},${decimalPart} đ`;
-        }
-        return `${formattedInteger} đ`;
+        return decimalPart.length > 0 ? `${formattedInteger},${decimalPart} đ` : `${formattedInteger} đ`;
     }
 
     function openLoginModal() { document.getElementById('loginModal').style.display = 'flex'; }
     function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
-
     function showLoading() { document.getElementById('loadingModal').style.display = 'flex'; }
     function hideLoading() { document.getElementById('loadingModal').style.display = 'none'; }
 
     function updateAuthUI() {
         const authArea = document.getElementById('authArea');
         const balanceArea = document.getElementById('balanceArea');
-        const adminPanel = document.getElementById('adminPanel');
 
         if (currentUser) {
+            let adminBtn = '';
+            if (currentUser.role === 'root_admin') {
+                adminBtn = `<a href="/admin.html" class="btn btn-admin"><i class="fa-solid fa-user-gear"></i> Admin</a>`;
+            }
+
             authArea.innerHTML = `
+                ${adminBtn}
                 <div class="user-info-tag"><i class="fa-solid fa-user"></i> ${currentUser.username}</div>
-                <button class="btn btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
+                <button class="btn btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
             `;
             balanceArea.style.display = 'grid';
             loadBalance();
         } else {
             authArea.innerHTML = `<button class="btn btn-login" onclick="openLoginModal()"><i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập</button>`;
             balanceArea.style.display = 'none';
-            adminPanel.style.display = 'none';
         }
     }
 
@@ -508,13 +380,10 @@
         if (!currentUser) return;
         const res = await fetch(`/api/user/balance?username=${currentUser.username}`);
         const data = await res.json();
-
         if (data.status === 'success') {
             document.getElementById('usableBalance').innerText = formatMoney(data.usableBalance || data.balance || 0);
-
             if (data.role === 'root_admin') {
                 document.getElementById('apiBalanceCard').style.display = 'block';
-                document.getElementById('adminPanel').style.display = 'block';
                 document.getElementById('apiRealBalance').innerText = formatMoney(data.realApiBalance || 0);
             }
         }
@@ -523,14 +392,12 @@
     async function loadServices() {
         const res = await fetch('/api/services');
         const data = await res.json();
-
         if (data.status === 'success' && data.data.length > 0) {
             allServices = data.data;
             const categories = [...new Set(allServices.map(s => s.category))];
             const catSelect = document.getElementById('categorySelect');
             catSelect.innerHTML = '';
             categories.forEach(c => catSelect.innerHTML += `<option value="${c}">${c}</option>`);
-
             filterServices();
         }
     }
@@ -540,11 +407,9 @@
         const filtered = allServices.filter(s => s.category === cat);
         const serviceSelect = document.getElementById('serviceSelect');
         serviceSelect.innerHTML = '';
-
         filtered.forEach(s => {
             serviceSelect.innerHTML += `<option value="${s.service}">[ID ${s.service}] ${s.name} - ${formatMoney(s.rate)} / 1k</option>`;
         });
-
         updateDetails();
     }
 
@@ -564,34 +429,6 @@
         if (service) {
             const total = (qty / 1000) * service.rate;
             document.getElementById('totalPrice').innerText = formatMoney(total);
-        }
-    }
-
-    function switchAdminTab(tab) {
-        document.getElementById('createAccForm').style.display = tab === 'create' ? 'block' : 'none';
-        document.getElementById('updateBalanceForm').style.display = tab === 'balance' ? 'block' : 'none';
-        document.getElementById('userListSection').style.display = tab === 'list' ? 'block' : 'none';
-
-        document.getElementById('tabCreateBtn').className = `btn-tab ${tab === 'create' ? 'active' : ''}`;
-        document.getElementById('tabBalanceBtn').className = `btn-tab ${tab === 'balance' ? 'active' : ''}`;
-        document.getElementById('tabListBtn').className = `btn-tab ${tab === 'list' ? 'active' : ''}`;
-
-        if (tab === 'list') loadUserList();
-    }
-
-    async function loadUserList() {
-        const res = await fetch(`/api/admin/users?adminUsername=${currentUser.username}`);
-        const data = await res.json();
-        if (data.status === 'success') {
-            const tbody = document.getElementById('userTableBody');
-            tbody.innerHTML = '';
-            if (data.data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:#64748b;">Chưa có tài khoản con nào</td></tr>`;
-                return;
-            }
-            data.data.forEach(u => {
-                tbody.innerHTML += `<tr><td><b>${u.username}</b></td><td style="color:#10b981; font-weight:600;">${formatMoney(u.balance)}</td></tr>`;
-            });
         }
     }
 
@@ -616,59 +453,12 @@
         }
     });
 
-    document.getElementById('createAccForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const res = await fetch('/api/admin/create-user', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                adminUsername: currentUser.username,
-                newUsername: document.getElementById('newUsername').value.trim(),
-                newPassword: document.getElementById('newPassword').value,
-                initialBalance: document.getElementById('initialBalance').value
-            })
-        });
-        const data = await res.json();
-        alert(data.message);
-        if (data.status === 'success') {
-            document.getElementById('createAccForm').reset();
-            loadBalance();
-        }
-    });
-
-    document.getElementById('updateBalanceForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const res = await fetch('/api/admin/update-balance', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                adminUsername: currentUser.username,
-                targetUsername: document.getElementById('targetUsername').value.trim(),
-                actionType: document.getElementById('actionType').value,
-                amount: document.getElementById('amount').value
-            })
-        });
-        const data = await res.json();
-        alert(data.message);
-        if (data.status === 'success') {
-            document.getElementById('updateBalanceForm').reset();
-            loadBalance();
-        }
-    });
-
     document.getElementById('orderForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!currentUser) {
-            alert("Vui lòng đăng nhập trước!");
-            openLoginModal();
-            return;
-        }
-
+        if (!currentUser) { alert("Vui lòng đăng nhập trước!"); openLoginModal(); return; }
         const alertBox = document.getElementById('alert');
         alertBox.style.display = 'none';
-
         showLoading();
-
         try {
             const serviceId = document.getElementById('serviceSelect').value;
             const qty = document.getElementById('quantity').value;
@@ -690,20 +480,19 @@
             const data = await res.json();
             hideLoading();
             alertBox.style.display = 'block';
-
             if (res.ok && data.status === 'success') {
                 alertBox.className = 'success';
                 alertBox.innerText = `Đặt đơn thành công! Mã đơn: ${data.orderId}`;
                 loadBalance();
             } else {
                 alertBox.className = 'error';
-                alertBox.innerText = `Lỗi: ${data.message || 'Không thể tạo đơn'} - Vui lòng liên hệ admin!`;
+                alertBox.innerText = `Lỗi: ${data.message || 'Không thể tạo đơn'}`;
             }
         } catch (error) {
             hideLoading();
             alertBox.style.display = 'block';
             alertBox.className = 'error';
-            alertBox.innerText = "Lỗi, vui lòng liên hệ admin";
+            alertBox.innerText = "Lỗi kết nối máy chủ";
         }
     });
 
