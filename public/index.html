@@ -3,619 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Dịch Vụ TikTok</title>
+    <title>SieuLike - Hệ Thống Dịch Vụ Mạng Xã Hội</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
             --bg-color: #0b0f19;
             --card-bg: #111827;
-            --item-bg: #1f2937;
-            --item-hover: #374151;
-            --text-color: #f9fafb;
             --border-green: #10b981;
-            --accent-green: #059669;
-            --danger: #ef4444;
-            --border-color: #1f2937;
+            --text-color: #f9fafb;
+            --purple-accent: #8b5cf6;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: system-ui, -apple-system, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            margin: 0; padding: 0;
         }
 
-        /* Navbar Header */
         .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: var(--card-bg);
-            padding: 12px 24px;
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: var(--card-bg); padding: 14px 20px;
             border-bottom: 1px solid #1f2937;
         }
 
-        .logo {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .logo { font-size: 1.2rem; font-weight: bold; color: #fff; }
+        .logo span { color: var(--border-green); }
 
-        .logo i {
-            color: var(--border-green);
-        }
+        .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
 
-        .user-nav {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .btn {
+            padding: 8px 16px; border-radius: 8px; border: none;
+            font-weight: 600; cursor: pointer; transition: 0.2s;
         }
+        .btn-green { background-color: var(--border-green); color: #fff; }
+        .btn-purple { background-color: var(--purple-accent); color: #fff; }
 
-        .balance-badge {
-            background-color: rgba(16, 185, 129, 0.15);
-            color: var(--border-green);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            border: 1px solid rgba(16, 185, 129, 0.3);
+        /* Accordion Menu */
+        .accordion-item {
+            background-color: #161f2e; border: 1px solid #1f2937;
+            border-radius: 12px; margin-bottom: 10px; overflow: hidden;
         }
-
-        .btn-sm {
-            padding: 6px 14px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.2s;
+        .accordion-header {
+            padding: 15px; display: flex; justify-content: space-between;
+            align-items: center; cursor: pointer; font-weight: bold;
         }
+        .accordion-content { display: none; padding: 10px; background-color: #0f172a; }
+        .accordion-item.active .accordion-content { display: block; }
 
-        .btn-green {
-            background-color: var(--border-green);
-            color: #fff;
+        .service-row {
+            padding: 10px; border-radius: 8px; background-color: #182232;
+            margin-bottom: 8px; display: flex; justify-content: space-between; cursor: pointer;
         }
+        .service-row:hover { background-color: #233146; }
 
-        .btn-green:hover {
-            background-color: var(--accent-green);
-        }
-
-        .btn-danger {
-            background-color: var(--danger);
-            color: #fff;
-        }
-
-        /* Layout Container */
-        .container {
-            max-width: 650px;
-            width: 100%;
-            margin: 20px auto;
-            padding: 0 15px;
-            box-sizing: border-box;
-        }
-
-        /* Header Tab TikTok */
-        .category-tab {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-
-        .category-btn {
-            background: #111827;
-            border: 1px solid var(--border-green);
-            color: #fff;
-            padding: 10px 30px;
-            border-radius: 12px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-
-        /* Menu Accordion UI (Chuẩn như ảnh) */
-        .accordion-group {
-            background-color: #0d131f;
-            border: 1px solid #1f2937;
-            border-radius: 16px;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .menu-item {
-            background-color: #161f2e;
-            border: 1px solid #1f2937;
-            border-radius: 12px;
-            overflow: hidden;
-            transition: all 0.2s ease;
-        }
-
-        .menu-header {
-            padding: 14px 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.95rem;
-            user-select: none;
-            color: #e5e7eb;
-        }
-
-        .menu-header:hover {
-            background-color: #1e293b;
-        }
-
-        .menu-header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .menu-header-left i {
-            font-size: 1.1rem;
-            width: 20px;
-            text-align: center;
-        }
-
-        /* Trạng thái Active/Xổ xuống của Menu */
-        .menu-item.active {
-            border: 1px solid var(--border-green);
-        }
-
-        .menu-item.active .menu-header {
-            border-bottom: 1px solid rgba(16, 185, 129, 0.2);
-        }
-
-        .submenu {
-            display: none;
-            padding: 10px;
-            background-color: #0f172a;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .menu-item.active .submenu {
-            display: flex;
-        }
-
-        .sub-item {
-            background-color: #182232;
-            padding: 12px 16px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            border: 1px solid transparent;
-            font-size: 0.9rem;
-            color: #cbd5e1;
-            transition: all 0.2s;
-        }
-
-        .sub-item:hover {
-            background-color: #233146;
-            border-color: #334155;
-            color: #fff;
-        }
-
-        .sub-item-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* Order Form Card */
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px;
-            margin-top: 20px;
-            border: 1px solid #1f2937;
-        }
-
-        .card-title {
-            font-size: 1.05rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--border-green);
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 0.85rem;
-            color: #9ca3af;
-        }
-
-        input {
-            width: 100%;
-            padding: 10px 14px;
-            background-color: #0b0f19;
-            border: 1px solid #374151;
-            border-radius: 8px;
-            color: #fff;
-            box-sizing: border-box;
-            outline: none;
-        }
-
-        input:focus {
-            border-color: var(--border-green);
-        }
-
-        /* Modal Đăng nhập */
+        /* Modal Forms */
         .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.75);
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 100;
         }
-
-        .modal-content {
-            background-color: var(--card-bg);
-            padding: 25px;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 360px;
-            border: 1px solid #374151;
-            position: relative;
+        .modal-body {
+            background-color: var(--card-bg); padding: 25px; border-radius: 16px;
+            width: 90%; max-width: 380px; border: 1px solid #374151;
         }
-
-        .close-btn {
-            position: absolute;
-            top: 15px; right: 15px;
-            cursor: pointer;
-            color: #9ca3af;
+        .form-group { margin-bottom: 12px; }
+        input {
+            width: 100%; padding: 10px; background: #0b0f19;
+            border: 1px solid #374151; border-radius: 8px; color: #fff; box-sizing: border-box;
         }
     </style>
 </head>
 <body>
 
-    <!-- Header Navbar -->
-    <nav class="navbar">
-        <div class="logo">
-            <i class="fa-brands fa-tiktok"></i> TikTok Service
+    <div class="navbar">
+        <div class="logo"><i class="fa-solid fa-bolt"></i> SIEU<span>LIKE</span>.COM</div>
+        <div id="guestMenu">
+            <button class="btn btn-green" onclick="showModal('loginModal')">Đăng nhập</button>
+            <button class="btn btn-purple" onclick="showModal('regModal')">Đăng ký</button>
         </div>
-        <div class="user-nav" id="navGuest">
-            <button class="btn-sm btn-green" onclick="openModal()"><i class="fa-solid fa-right-to-bracket"></i> Đăng nhập</button>
+        <div id="userMenu" style="display: none;">
+            <span><i class="fa-solid fa-wallet" style="color:var(--border-green);"></i> <b id="uBalance">0</b> đ</span> | 
+            <span id="uName"></span>
+            <button class="btn btn-purple" id="adminBtn" style="display:none;" onclick="showModal('adminModal')">ADMIN</button>
+            <button class="btn" onclick="logout()"><i class="fa-solid fa-power-off"></i></button>
         </div>
-        <div class="user-nav" id="navUser" style="display: none;">
-            <span class="balance-badge"><i class="fa-solid fa-wallet"></i> <span id="userBalance">0</span> đ</span>
-            <span style="font-size: 0.9rem;"><b id="usernameDisplay">User</b></span>
-            <button class="btn-sm btn-danger" onclick="logout()"><i class="fa-solid fa-power-off"></i></button>
-        </div>
-    </nav>
-
-    <div class="container">
-
-        <!-- Nút TikTok Top Tab -->
-        <div class="category-tab">
-            <div class="category-btn">
-                <i class="fa-brands fa-tiktok" style="color: #25f4ee;"></i> TikTok
-            </div>
-        </div>
-
-        <!-- BẢNG ACCORDION MENU GIỐNG WEB GỐC -->
-        <div class="accordion-group">
-            
-            <!-- 1. Mục Tim (Like) -->
-            <div class="menu-item" id="menu-tim">
-                <div class="menu-header" onclick="toggleMenu('menu-tim')">
-                    <div class="menu-header-left">
-                        <i class="fa-solid fa-heart" style="color: #ec4899;"></i> Tim
-                    </div>
-                    <i class="fa-solid fa-chevron-down arrow-icon"></i>
-                </div>
-                <div class="submenu">
-                    <div class="sub-item" onclick="selectService('Tim - Người thật - Ngoại', 20)">
-                        <div class="sub-item-left">🔥 Người thật - Ngoại</div>
-                        <span>20đ</span>
-                    </div>
-                    <div class="sub-item" onclick="selectService('Tim Ngoại (rẻ)', 10)">
-                        <div class="sub-item-left">🌐 Tim Ngoại (rẻ)</div>
-                        <span>10đ</span>
-                    </div>
-                    <div class="sub-item" onclick="selectService('Tim Việt', 35)">
-                        <div class="sub-item-left">🇻🇳 Tim Việt</div>
-                        <span>35đ</span>
-                    </div>
-                    <div class="sub-item" onclick="selectService('Ẩn tên người like', 15)">
-                        <div class="sub-item-left">🙈 Ẩn tên người like</div>
-                        <span>15đ</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2. Lượt xem (View) -->
-            <div class="menu-item" id="menu-view">
-                <div class="menu-header" onclick="toggleMenu('menu-view')">
-                    <div class="menu-header-left">
-                        <i class="fa-solid fa-eye" style="color: #3b82f6;"></i> Lượt xem
-                    </div>
-                    <i class="fa-solid fa-chevron-down arrow-icon"></i>
-                </div>
-                <div class="submenu">
-                    <div class="sub-item" onclick="selectService('View TikTok Nhanh', 5)">
-                        <div class="sub-item-left">⚡ View Nhanh</div>
-                        <span>5đ</span>
-                    </div>
-                    <div class="sub-item" onclick="selectService('View TikTok Việt', 8)">
-                        <div class="sub-item-left">🇻🇳 View Việt</div>
-                        <span>8đ</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 3. Người theo dõi (Follow) -->
-            <div class="menu-item" id="menu-follow">
-                <div class="menu-header" onclick="toggleMenu('menu-follow')">
-                    <div class="menu-header-left">
-                        <i class="fa-solid fa-user-plus" style="color: #10b981;"></i> Người theo dõi
-                    </div>
-                    <i class="fa-solid fa-chevron-down arrow-icon"></i>
-                </div>
-                <div class="submenu">
-                    <div class="sub-item" onclick="selectService('Follow Việt Chuẩn', 65)">
-                        <div class="sub-item-left">🇻🇳 Follow Việt chất lượng</div>
-                        <span>65đ</span>
-                    </div>
-                    <div class="sub-item" onclick="selectService('Follow Ngoại Rẻ', 40)">
-                        <div class="sub-item-left">🌐 Follow Ngoại giá rẻ</div>
-                        <span>40đ</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 4. Bình luận -->
-            <div class="menu-item" id="menu-comment">
-                <div class="menu-header" onclick="toggleMenu('menu-comment')">
-                    <div class="menu-header-left">
-                        <i class="fa-solid fa-comment-dots" style="color: #f59e0b;"></i> Bình luận
-                    </div>
-                    <i class="fa-solid fa-chevron-down arrow-icon"></i>
-                </div>
-                <div class="submenu">
-                    <div class="sub-item" onclick="selectService('Bình luận tùy chỉnh', 100)">
-                        <div class="sub-item-left">💬 Bình luận tùy chỉnh nội dung</div>
-                        <span>100đ</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 5. Lượt thích bình luận -->
-            <div class="menu-item" id="menu-like-comment">
-                <div class="menu-header" onclick="toggleMenu('menu-like-comment')">
-                    <div class="menu-header-left">
-                        <i class="fa-solid fa-thumbs-up" style="color: #8b5cf6;"></i> Lượt thích bình luận
-                    </div>
-                    <i class="fa-solid fa-chevron-down arrow-icon"></i>
-                </div>
-                <div class="submenu">
-                    <div class="sub-item" onclick="selectService('Like Comment TikTok', 30)">
-                        <div class="sub-item-left">👍 Thích bình luận</div>
-                        <span>30đ</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 6. Chia sẻ -->
-            <div class="menu-item" id="menu-share">
-                <div class="menu-header" onclick="toggleMenu('menu-share')">
-                    <div class="menu-header-left">
-                        <i class="fa-solid fa-share-nodes" style="color: #06b6d4;"></i> Chia sẻ
-                    </div>
-                    <i class="fa-solid fa-chevron-down arrow-icon"></i>
-                </div>
-                <div class="submenu">
-                    <div class="sub-item" onclick="selectService('Share TikTok', 20)">
-                        <div class="sub-item-left">🔗 Share Video TikTok</div>
-                        <span>20đ</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 7. Lượt lưu vào yêu thích -->
-            <div class="menu-item" id="menu-favorite">
-                <div class="menu-header" onclick="toggleMenu('menu-favorite')">
-                    <div class="menu-header-left">
-                        <i class="fa-solid fa-bookmark" style="color: #ec4899;"></i> Lượt lưu vào yêu thích
-                    </div>
-                    <i class="fa-solid fa-chevron-down arrow-icon"></i>
-                </div>
-                <div class="submenu">
-                    <div class="sub-item" onclick="selectService('Lưu Yêu Thích', 15)">
-                        <div class="sub-item-left">🔖 Lưu bài viết</div>
-                        <span>15đ</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 8. Lượt đăng lại -->
-            <div class="menu-item" id="menu-repost">
-                <div class="menu-header" onclick="toggleMenu('menu-repost')">
-                    <div class="menu-header-left">
-                        <i class="fa-solid fa-arrows-rotate" style="color: #10b981;"></i> Lượt đăng lại
-                    </div>
-                    <i class="fa-solid fa-chevron-down arrow-icon"></i>
-                </div>
-                <div class="submenu">
-                    <div class="sub-item" onclick="selectService('Đăng lại (Repost)', 25)">
-                        <div class="sub-item-left">🔄 Repost Video</div>
-                        <span>25đ</span>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Khung Đặt Đơn Hàng (Tự xuất hiện khi chọn dịch vụ) -->
-        <div class="card" id="orderCard" style="display: none;">
-            <div class="card-title">
-                <i class="fa-solid fa-cart-shopping"></i> Tạo đơn: <span id="selectedServiceName" style="color: #fff;"></span>
-            </div>
-            
-            <div class="form-group">
-                <label>Link Video / Link Profile TikTok</label>
-                <input type="text" id="orderLink" placeholder="https://www.tiktok.com/@username/video/...">
-            </div>
-
-            <div class="form-group">
-                <label>Số lượng cần tăng</label>
-                <input type="number" id="orderQuantity" value="1000" oninput="calculateTotal()">
-            </div>
-
-            <div style="background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid rgba(16, 185, 129, 0.2);">
-                <span style="font-size: 0.85rem; color: #9ca3af;">Thành tiền:</span>
-                <div style="font-size: 1.3rem; font-weight: 700; color: var(--border-green);" id="totalPriceDisplay">0 VNĐ</div>
-            </div>
-
-            <button class="btn-sm btn-green" style="width: 100%; padding: 12px; font-size: 1rem;" onclick="submitOrder()">TẠO ĐƠN NGAY</button>
-        </div>
-
     </div>
 
-    <!-- Modal Đăng nhập -->
+    <div class="container">
+        <!-- DANH SÁCH MỤC DỊCH VỤ ACCORDION CHUẨN GIAO DIỆN MẪU -->
+        <div class="accordion-item" id="acc-tim">
+            <div class="accordion-header" onclick="toggleAcc('acc-tim')">
+                <span><i class="fa-solid fa-heart" style="color:#ec4899;"></i> Tim TikTok</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <div class="accordion-content">
+                <div class="service-row" onclick="alert('Đã chọn dịch vụ!')">
+                    <span>🔥 TikTok - Tim - Người nước ngoài</span>
+                    <b style="color:var(--border-green);">3.73đ</b>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item" id="acc-view">
+            <div class="accordion-header" onclick="toggleAcc('acc-view')">
+                <span><i class="fa-solid fa-eye" style="color:#3b82f6;"></i> Lượt xem TikTok</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <div class="accordion-content">
+                <div class="service-row">
+                    <span>⚡ Lượt xem siêu tốc</span>
+                    <b style="color:var(--border-green);">1.2đ</b>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ĐĂNG KÝ -->
+    <div class="modal" id="regModal">
+        <div class="modal-body">
+            <h3>Đăng ký tài khoản mới</h3>
+            <div class="form-group"><input type="text" id="regUser" placeholder="Tên đăng nhập"></div>
+            <div class="form-group"><input type="password" id="regPass" placeholder="Mật khẩu"></div>
+            <button class="btn btn-purple" style="width:100%;" onclick="register()">ĐĂNG KÝ</button>
+            <p style="text-align:center; font-size: 0.8rem; cursor:pointer;" onclick="showModal('loginModal')">Đã có tài khoản? Đăng nhập</p>
+        </div>
+    </div>
+
+    <!-- MODAL ĐĂNG NHẬP -->
     <div class="modal" id="loginModal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></span>
-            <h3 style="margin-top: 0; color: var(--border-green);">Đăng Nhập</h3>
-            <div class="form-group">
-                <label>Tên tài khoản</label>
-                <input type="text" id="loginUser" placeholder="Nhập tên tài khoản">
-            </div>
-            <div class="form-group">
-                <label>Mật khẩu</label>
-                <input type="password" id="loginPass" placeholder="Nhập mật khẩu">
-            </div>
-            <button class="btn-sm btn-green" style="width: 100%; padding: 10px;" onclick="login()">Đăng Nhập</button>
+        <div class="modal-body">
+            <h3>Đăng nhập</h3>
+            <div class="form-group"><input type="text" id="logUser" placeholder="Tên đăng nhập"></div>
+            <div class="form-group"><input type="password" id="logPass" placeholder="Mật khẩu"></div>
+            <button class="btn btn-green" style="width:100%;" onclick="login()">ĐĂNG NHẬP</button>
+        </div>
+    </div>
+
+    <!-- MODAL PHẦN QUẢN TRỊ ADMIN -->
+    <div class="modal" id="adminModal">
+        <div class="modal-body">
+            <h3 style="color:var(--purple-accent);">BẢNG QUẢN TRỊ ADMIN</h3>
+            <p style="font-size:0.85rem; color:#9ca3af;">Cộng tiền cho thành viên hệ thống:</p>
+            <div class="form-group"><input type="text" id="admTarget" placeholder="Tên tài khoản nhận tiền"></div>
+            <div class="form-group"><input type="number" id="admAmount" placeholder="Số tiền cộng (VNĐ)"></div>
+            <button class="btn btn-green" style="width:100%;" onclick="addBalanceAdmin()">CỘNG TIỀN</button>
+            <button class="btn" style="width:100%; margin-top:5px;" onclick="hideModals()">Đóng</button>
         </div>
     </div>
 
     <script>
-        let currentPrice = 0;
-
-        function toggleMenu(menuId) {
-            const item = document.getElementById(menuId);
-            const isActive = item.classList.contains('active');
-            
-            // Đóng tất cả các menu khác
-            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-            
-            // Nếu chưa mở thì mở menu hiện tại
-            if (!isActive) {
-                item.classList.add('active');
-            }
+        function toggleAcc(id) {
+            document.getElementById(id).classList.toggle('active');
         }
 
-        function selectService(name, price) {
-            currentPrice = price;
-            document.getElementById('selectedServiceName').innerText = name;
-            document.getElementById('orderCard').style.display = 'block';
-            calculateTotal();
-            
-            // Cuộn mượt xuống form đặt đơn
-            document.getElementById('orderCard').scrollIntoView({ behavior: 'smooth' });
+        function showModal(id) {
+            hideModals();
+            document.getElementById(id).style.display = 'flex';
         }
 
-        function calculateTotal() {
-            const qty = parseInt(document.getElementById('orderQuantity').value) || 0;
-            const total = qty * currentPrice;
-            document.getElementById('totalPriceDisplay').innerText = total.toLocaleString('vi-VN') + ' VNĐ';
+        function hideModals() {
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
         }
 
-        function openModal() { document.getElementById('loginModal').style.display = 'flex'; }
-        function closeModal() { document.getElementById('loginModal').style.display = 'none'; }
+        async function register() {
+            const username = document.getElementById('regUser').value;
+            const password = document.getElementById('regPass').value;
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if (res.ok) showModal('loginModal');
+        }
 
         async function login() {
-            const username = document.getElementById('loginUser').value;
-            const password = document.getElementById('loginPass').value;
-
+            const username = document.getElementById('logUser').value;
+            const password = document.getElementById('logPass').value;
             const res = await fetch('/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
             });
-
             const data = await res.json();
             if (res.ok) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('username', username);
-                localStorage.setItem('balance', data.balance);
-                closeModal();
-                checkAuth();
+                localStorage.setItem('user', JSON.stringify(data));
+                hideModals();
+                loadUser();
             } else {
-                alert(data.error || 'Đăng nhập thất bại');
+                alert(data.error);
             }
         }
 
-        function checkAuth() {
-            const token = localStorage.getItem('token');
-            const username = localStorage.getItem('username');
-            const balance = localStorage.getItem('balance');
-
-            if (token) {
-                document.getElementById('navGuest').style.display = 'none';
-                document.getElementById('navUser').style.display = 'flex';
-                document.getElementById('usernameDisplay').innerText = username;
-                document.getElementById('userBalance').innerText = parseFloat(balance || 0).toLocaleString('vi-VN');
-            } else {
-                document.getElementById('navGuest').style.display = 'flex';
-                document.getElementById('navUser').style.display = 'none';
+        function loadUser() {
+            const u = JSON.parse(localStorage.getItem('user'));
+            if (u) {
+                document.getElementById('guestMenu').style.display = 'none';
+                document.getElementById('userMenu').style.display = 'block';
+                document.getElementById('uName').innerText = u.username;
+                document.getElementById('uBalance').innerText = u.balance.toLocaleString();
+                if (u.role === 'admin') {
+                    document.getElementById('adminBtn').style.display = 'inline-block';
+                }
             }
         }
 
-        function logout() {
-            localStorage.clear();
-            location.reload();
-        }
+        async function addBalanceAdmin() {
+            const u = JSON.parse(localStorage.getItem('user'));
+            const targetUsername = document.getElementById('admTarget').value;
+            const amount = document.getElementById('admAmount').value;
 
-        async function submitOrder() {
-            const link = document.getElementById('orderLink').value;
-            const quantity = document.getElementById('orderQuantity').value;
-
-            if (!link) {
-                alert('Vui lòng nhập link bài viết!');
-                return;
-            }
-
-            const res = await fetch('/api/order', {
+            const res = await fetch('/api/admin/add-balance', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
-                },
-                body: JSON.stringify({ link, quantity, pricePerItem: currentPrice })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ adminUsername: u.username, targetUsername, amount })
             });
-
             const data = await res.json();
-            if (res.ok) {
-                alert('Tạo đơn thành công! Mã đơn: ' + data.localOrderId);
-            } else {
-                alert(data.error || 'Tạo đơn thất bại!');
-            }
+            alert(data.message || data.error);
         }
 
-        checkAuth();
+        function logout() { localStorage.clear(); location.reload(); }
+        loadUser();
     </script>
 </body>
 </html>
